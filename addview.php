@@ -1,24 +1,51 @@
+<?php
+class ViewClass
+{
+    public function DisplayInput($handlename, $title, $contents)
+    {
+      
+    }
+    // 新規確認画面
+    public function DisplayInputNewCheck($handlename, $title, $contents, $pass_word)
+    {  
+      return '<form action="insert.php" method="post">
+  				<table class="addview">
+  					<tr><td width="150">名前</td><td>'.$handlename.'</td></tr>
+  					<tr><td width="150">タイトル</td><td>'.$title.'</td></tr>
+  					<tr><td width="150" valign="top">メッセージ</td><td></td></tr>
+  					<tr><td colspan="2">'.$contents.'</td></tr>
+  					<tr><td width="150" valign="top">更新・削除キー</td><td>●●●●</td></tr>
+  					<tr align="center"><td colspan="2" align="right"> <input type="submit" name="addsub" value="書込み">
+  																							<INPUT type="button" value="やり直し" onClick="history.back()"></td></tr>
+  				</table> 
+          <input type="hidden" name="handlename" value="'.$handlename.'"> 
+          <input type="hidden" name="title" value="'.$title.'"> 
+          <input type="hidden" name="contents" value="'.$contents.'"> 
+          <input type="hidden" name="pass_word" value="'.$pass_word.'"> 
+  			</form>';
+    }
 
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="ja" lang="ja">
+    // 新規画面
+    public $handlename='<input type="text" name="handlename" size="50">';
+    public $title='<input type="text" name="title" size="50">';
+    public $contents='<textarea name="contents" cols="50" rows="3" wrap="soft"></textarea>';
+    public $pass_word='<input type="password" name="pass_word" size="10">';
 
-<head>
-	<meta http-equiv="Contrnt-Type" content="text/html; charset=UTF-8" />
-	<title>掲示板入門編</title>
-</head>
-<body>
-	<div id="message board"></div>
-		<h1>掲示板</h1>
-		<div id="messag">
-			<form action="insert.php" method="post">
-				<table bgcolor="#66bb00">
-					<tr><td width="150">名前</td><td><input type="text" name="handlename" size="50"></td></tr>
-					<tr><td width="150">タイトル</td><td><input type="text" name="title" size="50"></td></tr>
-					<tr><td width="150" valign="top">メッセージ</td><td></td></tr>
-					<tr><td colspan="2"><textarea name="contents" cols="50" rows="3" wrap="soft"></textarea></td></tr>
-					<tr><td width="150" valign="top">更新・削除キー</td><td><input type="text" name="delno" size="5"></td></tr>
-					<tr align="center"><td colspan="2" align="right"><input type="submit"value="書込み" size="20">
-																							<input type="reset" value="リセット"></td></tr>
-				</table>
-			</form>
-		</div>
-	</div>
+    public function DisplayInputNew() 
+    {
+        //return $this->InputNew;
+        return '<form action="insertcheck.php" method="post">
+  				<table  class="addview">
+  					<tr><td width="150">名前</td><td>'.$this->handlename.'</td></tr>
+  					<tr><td width="150">タイトル</td><td>'.$this->title.'</td></tr>
+  					<tr><td width="150" valign="top">メッセージ</td><td></td></tr>
+  					<tr><td colspan="2">'.$this->contents.'</td></tr>
+  					<tr><td width="150" valign="top">更新・削除キー</td><td>'.$this->pass_word.'&nbsp;4ケタの半角英数字</td></tr>
+  					<tr align="center"><td colspan="2" align="right"> <input type="submit" name="addsub" value="入力確認">
+  																							<input type="reset" name="cancel" value="リセット"></td></tr>
+  				</table>
+  			</form>';
+    }
+
+}
+?> 
