@@ -4,13 +4,13 @@
   /******************************/
 class DataCheckClass
 {  
-  public function InputDataCheck($handlename, $title, $contents, $pass_word)
+  function InputDataCheck($handlename, $title, $comment, $pass_word)
   {
     //未入力チェック
     $ret='';
     $ret.= $this->DataCheckEnp($handlename, '名前');
     $ret.= $this->DataCheckEnp($title, 'タイトル');
-    $ret.= $this->DataCheckEnp($contents, 'メッセージ');
+    $ret.= $this->DataCheckEnp($comment, 'メッセージ');
     $ret.= $this->DataCheckEnp($pass_word, '更新・削除キー');
     if(strlen($ret)>0)
     {
@@ -31,7 +31,7 @@ class DataCheckClass
 		return $ret;
   }
   
-  private function DataCheckEnp($item,$itemname)
+  function DataCheckEnp($item,$itemname)
   {
     $ret='';
     if(strlen($item)==0)
@@ -41,7 +41,7 @@ class DataCheckClass
     return $ret;
   }
 
-  private function DataCheckLen($item, $itemname, $len)
+  function DataCheckLen($item, $itemname, $len)
   {
     $ret='';
     if(strlen($item)!=$len)
@@ -51,7 +51,7 @@ class DataCheckClass
     return $ret;
   }
 
-  private function DataCheckNum($item, $itemname)
+  function DataCheckNum($item, $itemname)
   {
     $ret='';
     if (!preg_match("/^[a-zA-Z0-9]+$/",$item))

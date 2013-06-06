@@ -2,35 +2,60 @@
   /******************************/
   /*  入力確認画面  */
   /******************************/
-  require_once('hedbottom.php');
-  require_once('AddView.php');
-  require_once('InputCheck.php');
-  require_once('DataSave.php');
+  require_once('DBClass.php');
+  require_once('ViewClass.php');
+  require_once('DataCheckClass.php');
 
   $handlename = $_POST['handlename'];
   $title = $_POST['title'];
-  $contents = $_POST['contents'];
+  $comment = $_POST['comment'];
   $pass_word = $_POST['pass_word'];
 
-  if(isset($_POST['addsub']))
+  if(isset($_POST['insertchk']))
   {
-    $cDcc= new DataCheckClass();
-    $msg= $cDcc->InputDataCheck($handlename, $title, $contents, $pass_word);
+    $view = new ViewClass();
+    //データチェック
+    $check = new DataCheckClass();
+    $msg= $check->InputDataCheck($handlename, $title, $comment, $pass_word);
     if(strlen($msg)>0)
-    {
-      $msgtype = '1';
-      include('Msg.php');    // 失敗画面表示
+    {//エラーあり
+      //失敗画面表示
+      $view->pagetitle = $view->htmlSpanRed('エラー：確認してください。');
+      $view->msg = $view->htmlSpanRed($msg);
+      $view->button = $view->htmlButtonType();
+      $view->contents = $view->htmlMessage();
+      echo $view->htmlView();
+      return;
     }
 
-    
-    $cVc = new ViewClass();
-    $view = $cVc->DisplayInputNewCheck($handlename, $title, $contents, $pass_word);
-    //ページヘッダ
-    echo htmlheader('入力確認');
-    //インプット
-    echo $view;
-    //ページフッタ
-    echo htmlfooter();
+    $view->handlename = $handlename;
+    $view->title = $title;
+    $view->comment = nl2br($comment);
+    $view->pass_word = $pass_word;
+    $view->contents = $view->htmlComentCheck();
+    echo $view->htmlView();
     return;
+/*
+    try
+    {
+      //データ追加
+      $db = new DBClass();  //DB Open
+      $db->DBOpen();
+      $db->title;
+      $db->board_id;
+      $db->contents;
+      $db->handlename;
+      $db->pass_word;
+      $db->InsertComment();
+      $db->DbClose(); //DB Close
+    }
+  	catch (PDOException $e)
+  	{
+      print('Error:'.$e->getMessage());
+      die();
+  	}
+*/
+
   }
+
 ?>

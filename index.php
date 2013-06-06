@@ -2,35 +2,40 @@
   /******************************/
   /*  メイン  */
   /******************************/
-  require_once('db.php');
-  require_once('hedbottom.php');
-  require_once('AddView.php');
+  require_once('DBClass.php');
+  require_once('ViewClass.php');
 	try
 	{
-    //ここなんとかせねば。
-		$dbh = new PDO($dbdsn, $dbuser, $dbpassword);
-		$sql = 'select board.id,title,contents from board left join comment on board.id=comment.board_id order by id desc';
+    //コメント入力
+    $view = new ViewClass();
+    $body = $view->htmlComentInput();
 
-		$body = '<table><tbody><tr><th>id</th><th>タイトル</th><th>内容</th></tr>';
-		foreach ($dbh->query($sql) as $row)
-		{
-			$body.= '<tr><td>'.$row['id'].'</td><td>'.$row['title'].'</td><td>'.nl2br($row['contents']).'</td>';
-      $body.='<td><form action="passwordchk.php&id=1" method="post"><input type="submit" name="editsub" value="編集"></form></td>';
-      $body.='<td><form action="passwordchk.php&id=2" method="post"><input type="submit" name="delsub" value="削除"></form></td></tr>';
+    //タイトル一覧表示
+    $db = new DBClass();  //DB Open
+    $db->DBOpen();
+//    $sql = 'select board.title, board.id, name, board.created_at, board.up_date from board
+//            left join comment on board.id=comment.board_id order by id desc';
+//    $sqlret = $db->SelectCol($sql);
+    $sqlret = $db->SelectTitleView();
+
+    $body .= $view->htmlTitleViewHeader();
+    foreach ($sqlret as $row)
+    {
+      $view->bord_id = $row['id'];
+      $view->title = $row['title'];
+      $view->handlename = $row['name'];
+      $view->add_date = $row['created_at'];
+      $view->up_date = $row['up_date'];
+      $body .= $view->htmlTitleView();
    	}
-		$body.= '</tbody></table>';
+    $body .= $view->htmlTitleViewFooter();
 
-    $cVc = new ViewClass();
-    $view = $cVc->DisplayInputNew();
+    $db->DbClose(); //DB Close
 
-    //ページヘッダ
-    echo htmlheader('メイン画面');
-    //インプット
-    echo $view;
-    //ページ本文t
-    echo $body;
-    //ページフッタ
-    echo htmlfooter();
+    //表示
+    $view->pagetitle = 'コメント入力';
+    $view->contents = $body;
+    echo $view->htmlView();
 
 	}
 	catch (PDOException $e)
