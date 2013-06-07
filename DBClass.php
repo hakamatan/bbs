@@ -11,7 +11,7 @@ class DBClass
 
   public $title;
   public $board_id;
-  public $contents;
+  public $comment;
   public $handlename;
   public $pass_word;
   public $comment_id;
@@ -33,16 +33,6 @@ class DBClass
   }
 
   /******************************/
-  //タイトル一覧
-  /******************************/
-  function SelectTitleView()
-  {
-    $sql = 'select board.title, board.id, name, board.created_at, board.up_date from board
-            left join comment on board.id=comment.board_id order by id desc';
-    return $this->dbh->query($sql);
-  }
- 
-  /******************************/
   //select
   /******************************/
   function SelectCol($sql)
@@ -58,32 +48,63 @@ class DBClass
     $ret = $this->dbh->prepare($sql);
     return $ret;
   }
+
   /******************************/
   //新規コメント追加
   /******************************/
   function InsertComment()
   {
-    //トランザクション
-    //$dbh->beginTransaction();
-    print 'a<br>';
     //ボード追加
     $sql = $this->InsertCol("insert into board (title) values (:title)");
     $sql->bindParam(":title", $this->title);
-    $sql->execute();
-    print 'b<br>';
+    $flag = $sql->execute();
+    if ($flag)
+    {
+      $flag = false;
+      // 最後に生成した ID を取得
+      $board_id = $this->dbh->lastInsertId();
 
-    // 最後に生成した ID を取得
-    $board_id = $this->dbh->lastInsertId();
-    print 'c<br>';
-
-		//コメントデータ追加
-		$sql = $this->InsertCol("insert into comment (board_id, contents, name, pass_word) values (:board_id, :contents, :handlename, :pass_word)");
-    $sql->bindParam(":board_id", $board_id);
-    $sql->bindParam(":contents", $this->contents);
-    $sql->bindParam(":handlename", $this->handlename);
-    $sql->bindParam(":pass_word", $this->pass_word);
-    $sql->execute();
-    print 'd<br>';
+      //コメントデータ追加
+      $sql = $this->InsertCol("insert into comment (board_id, contents, name, pass_word, title) values (:board_id, :contents, :handlename, :pass_word, :title)");
+      $sql->bindParam(":board_id", $board_id);
+      $sql->bindParam(":contents", $this->comment);
+      $sql->bindParam(":handlename", $this->handlename);
+      $sql->bindParam(":pass_word", $this->pass_word);
+      $sql->bindParam(":title", $this->title);
+      $flag = $sql->execute();
+    }
   }
+
+  /******************************/
+  //コメント更新
+  /******************************/
+  function UpdateComment()
+  {
+    //ボード更新
+    $sql = $this->InsertCol("update comment set contents = :contents, name = :name, pass_word = : pass_word, title = :title where id = :id");
+    $sql->bindParam(":id", $this->comment_id);
+    $sql->bindParam(":contents", $this->comment);
+    $sql->bindParam(":name", $this->handlename);
+    $sql->bindParam(":pass_word", $this->pass_word);
+    $sql->bindParam(":title", $this->title);
+    $flag = $sql->execute();
+  }
+
+  /******************************/
+  //コメント更新
+  /******************************/
+  function DeleteComment()
+  {
+    //ボード更新
+    $sql = $this->InsertCol("delete from comment where id = :id");
+    $sql->bindParam(":id", $this->comment_id);
+    $flag = $sql->execute();
+    if($flag)
+    {
+      print '--->'.$flag.'<---';
+    }
+  }
+
+
 }
 ?>
