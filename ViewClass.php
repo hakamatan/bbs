@@ -4,6 +4,31 @@
   /***************************/
 class ViewClass
 {
+  //ページタイトル
+  public $pagetitlearray = array(
+        'add'=>'コメント入力',
+        'edit'=>'コメント修正',
+        'exception'=>'エラー：異常終了',
+        'error'=>'エラー',
+        'insert'=>'追加処理',
+        'update'=>'更新処理',
+        'delete'=>'削除処理',
+        'inputcheck'=>'コメント入力確認',
+        'keycheck'=>'更新・削除キーチェック');
+  
+  //ファイル
+  public $urlarray = array(
+        'home'=>'index.php',
+        'add'=>'insert.php?type=1',
+        'returnadd'=>'insert.php?type=2',
+        'edit'=>'insert.php?type=3',
+        'group'=>'selectgroup.php');
+
+  //ファイル
+  public $msgarray = array(
+        'ok'=>'正常に処理されました。',
+        'keycheck'=>'キーが一致しません。');
+
   //プロパティ
   public $contents;
   public $pagetitle;
@@ -18,21 +43,12 @@ class ViewClass
   public $board_id;
   public $comment_id;
   public $urlfile;
+  public $cnt;
 
   /***************************/
   //ページ
   /***************************/
   function htmlView()
-  {
-    $ret = $this->htmlHeader();
-    $ret .= $this->contents;
-    $ret .= $this->htmlFooter();
-    return $ret;
-  }
-  /***************************/
-  //ヘッダー部
-  /***************************/
-  function htmlHeader()
   {
     $ret = '
     <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">';
@@ -48,19 +64,13 @@ class ViewClass
     <center>
     <div id="maincontents">
       <br>
-      <div id="maintitle"><h3>掲示板</h3></div>
+      <div id="maintitle"><h3>■　掲示板　■</h3></div>
+      <div id="homelnk"><a href="./">&nbsp;HOME&nbsp;</a></div>
       <div id="pagetitle">'.$this->pagetitle.'</div>
       <!--コンテンツ START -->
       <div id="contents">';
-    return $ret;
-  }
-
-  /***************************/
-  //フッダー部
-  /***************************/
-  function htmlFooter()
-  {
-    return '
+    $ret .= $this->contents;
+    $ret .= '
       </div>
       <!--コンテンツ END -->
       <br>
@@ -68,12 +78,31 @@ class ViewClass
     </center>
     </body>
     </html>';
+    return $ret;
   }
 
   /***************************/
   //タイトル一覧
   /***************************/
-  function htmlTitleView()
+  function htmlTitleView($TitleViewBody)
+  {
+    $ret = '
+    <!--(2:タイトル一覧 START)-->
+        <div class="group2">
+          <table id="titlegrp" cellspacing="1px">
+          <tr><th>タイトル</th><th>投稿者</th><th>作成日</th><th>最終更新日</th></tr>';
+    $ret .= $TitleViewBody;
+    $ret .= '
+          </table>
+        </div>
+    <!--(2:タイトル一覧 END)-->';
+    return $ret;
+  }
+
+  /***************************/
+  //タイトル一覧本体
+  /***************************/
+  function htmlTitleViewBody()
   {
     return '
           <tr><td class="left"><a href="selectgroup.php?board_id='.$this->board_id.'">'.$this->title.'</a></td>
@@ -84,35 +113,12 @@ class ViewClass
   }
 
   /***************************/
-  //タイトル一覧ヘッダー
-  /***************************/
-  function htmlTitleViewHeader()
-  {
-    return '
-    <!--(2:タイトル一覧 START)-->
-        <div class="group2">
-          <table id="titlegrp" cellspacing="1px">
-          <tr><th>タイトル</th><th>投稿者</th><th>作成日</th><th>最終更新日</th></tr>';
-  }
-
-  /***************************/
-  //タイトル一覧フッター
-  /***************************/
-  function htmlTitleViewFooter()
-  {
-    return '
-          </table>
-        </div>
-    <!--(2:タイトル一覧 END)-->';
-  }
-
-  /***************************/
   //コメント入力
   /***************************/
-  function htmlCommentNewInput()
+  function htmlCommentNewInput($title = '')
   {
     $this->handlename = '';
-    $this->title = '';
+    $this->title = $title;
     $this->comment = '';
     $this->pass_word = '';
 
@@ -129,13 +135,13 @@ class ViewClass
         <div class="group0">
           <form action="'.$this->urlfile.'" method="post">
             <table id="newdata">
-            <tr><th>名前</th><td><input size="51" type="text" name="handlename" value="'.$this->handlename.'"></td></tr>
-            <tr><th>タイトル</th><td><input size="51" type="text" name="title" value="'.$this->title.'"></td></tr>
-            <tr><th class="top">メッセージ</th><td><textarea rows="7" cols="52" name="comment">'.nl2br($this->comment).'</textarea></td></tr>
-            <tr><th>更新・削除キー</th><td><input size="11" type="text" name="pass_word" value="'.$this->pass_word.'">
+            <tr><th>名前</th><td><input class="jpn" size="51" type="text" name="handlename" value="'.$this->handlename.'"></td></tr>
+            <tr><th>タイトル</th><td><input class="jpn" size="51" type="text" name="title" value="'.$this->title.'"></td></tr>
+            <tr><th class="top">メッセージ</th><td><textarea class="jpn" rows="7" cols="52" name="comment">'.$this->comment.'</textarea></td></tr>
+            <tr><th>更新・削除キー</th><td><input class="pass_word" maxlength="4" size="11" type="text" name="pass_word" value="'.$this->pass_word.'">
                 &nbsp;<span class="small">４桁の英数字</span></td></tr>
             <tr><th></th><td class="right"><input type="submit" name="insertchk" value="  確認  ">
-                              <input type="reset" name="cancel" value="  クリア  "></td></tr>
+                              <input type="reset" name="cancel" value="  もとに戻す  "></td></tr>
             </table>
           </form>
         </div>
@@ -159,14 +165,15 @@ class ViewClass
     {
       case  '1':
         $url1 = 'http://'.$_SERVER['HTTP_HOST'].dirname($_SERVER['PHP_SELF']).'/index.php';
-        $ret = '<input type="button" value=" 戻る " onclick="location.href=\''.$url1.'\'">';
+        $ret = '<input type="button" value="  戻る  " onclick="location.href=\''.$url1.'\'">';
         break;
       case  '2':
-        $url2 = 'http://'.$_SERVER['HTTP_HOST'].dirname($_SERVER['PHP_SELF']).'/group.php';
-        $ret = '<input type="button" value=" 戻る " onclick="location.href=\''.$url1.'\'">';
+        $url2 = 'http://'.$_SERVER['HTTP_HOST'].dirname($_SERVER['PHP_SELF']).'/selectgroup.php';
+        $url2 .= '?board_id='.$this->board_id;
+        $ret = '<input type="button" value="  戻る  " onclick="location.href=\''.$url2.'\'">';
         break;
       default:
-        $ret = '<input type="button" value=" 戻る " onclick="history.back();"><br>';
+        $ret = '<input type="button" value="  戻る  " onclick="history.back();"><br>';
         break;
     }
     return $ret;
@@ -190,6 +197,23 @@ class ViewClass
   }
 
   /***************************/
+  //エラーメッセージ
+  /***************************/
+  function htmlErrMessage()
+  {
+    $ret = '
+      <!--(5:メッセージ表示 START)-->
+          <div class="group10">
+            <div id="msg">'.
+            $this->htmlSpanRed($this->msg).'<br>'.
+            $this->button.'
+            </div>
+          </div>
+      <!--(5:メッセージ表示 END)-->';
+    return $ret;
+  }
+
+  /***************************/
   //コメント入力確認
   /***************************/
   function htmlCommentCheck()
@@ -204,7 +228,7 @@ class ViewClass
             <tr><th>メッセージ</th><td>'.nl2br($this->comment).'</td></tr>
             <tr><th>更新・削除キー</th><td>'.$this->pass_word.'</td></tr>
             <tr><th></th><td class="right"><input type="submit" name="insert" value="  書込み  ">
-                              <input type="button" value=" 戻る " onclick="history.back();"></td></tr>
+                              <input type="button" value="  戻る   " onclick="history.back();"></td></tr>
             </table>
             <input type="hidden" name="handlename" value="'.$this->handlename.'">
             <input type="hidden" name="title" value="'.$this->title.'">
@@ -219,16 +243,29 @@ class ViewClass
   /***************************/
   //グループ一覧
   /***************************/
-  function htmlGroupView()
+  function htmlGroupView($GroupView, $SubGroupView)
   {
     $ret = '
     <!--(1:グループ一覧 START)-->
         <div class="group0">';
-    $ret .= $this->htmlGroupViewParts1();
+    $ret .= $GroupView;
+    $ret .= $SubGroupView;
+    $ret .= '
+      </div>
+      <!--(1:グループ一覧 END)-->';
+    return $ret;
+  }
+
+  /***************************/
+  //グループ一覧
+  /***************************/
+  function htmlGroupViewFirst()
+  {
+    $ret = $this->htmlGroupViewComment();
     $ret .= '
           <right><!--btn:start-->
           <div class="button0">';
-    $ret .= $this->htmlGroupViewParts2();
+    $ret .= $this->htmlGroupViewButton();
     $ret .= '
           </div>
           </right><!--btn:end-->';
@@ -238,36 +275,26 @@ class ViewClass
   /***************************/
   //グループ一覧パーツ
   /***************************/
-  function htmlGroupViewParts1()
+  function htmlGroupViewComment()
   {
     return '
       <div class="title_name">'.$this->title.'  ---  '.$this->handlename.'</div>
       <div class="time">'.$this->up_date.'</div>
-      <div class="comment">'.$this->comment.'</div>';
+      <div class="comment">'.nl2br($this->comment).'</div>';
   }
 
   /***************************/
   //グループ一覧パーツ
   /***************************/
-  function htmlGroupViewParts2()
+  function htmlGroupViewButton()
   {
     return '
       <div class="btn1">
-        <form action="selectgroup.php?type=1&comment_id='.$this->comment_id.'&board_id='.$this->board_id.'" method="post"><input type="submit" name="update" value=" 編集 "></form>
+        <form action="'.$this->urlfile.'?type=1&comment_id='.$this->comment_id.'&board_id='.$this->board_id.'&cnt='.$this->cnt.'" method="post"><input type="submit" name="update" value=" 編集 "></form>
       </div>
       <div class="btn2">
-        <form action="selectgroup.php?type=2&comment_id='.$this->comment_id.'&board_id='.$this->board_id.'" method="post"><input type="submit" name="delete" value=" 削除 "></form>
+        <form action="'.$this->urlfile.'?type=2&comment_id='.$this->comment_id.'&board_id='.$this->board_id.'&cnt='.$this->cnt.'" method="post"><input type="submit" name="delete" value=" 削除 "></form>
       </div>';
-  }
-
-  /***************************/
-  //グループ一覧エンド
-  /***************************/
-  function htmlGroupViewEnd()
-  {
-    return '
-      </div>
-      <!--(1:グループ一覧 END)-->';
   }
 
   /***************************/
@@ -279,13 +306,14 @@ class ViewClass
     <!--(1-1:サブグループ一覧 START)-->
           <right>
           <div class="group1">';
-    $ret .= $this->htmlGroupViewParts1();
+    $ret .= $this->htmlGroupViewComment();
     $ret .= '
           <right><!--btn:start-->
             <div class="button1">';
-    $ret .= $this->htmlGroupViewParts2();
+    $ret .= $this->htmlGroupViewButton();
     $ret .= '
-            </right><!--btn:end-->
+            </div>
+          </right><!--btn:end-->
           </div>
           </right>
     <!--(1-1:サブグループ一覧 END)-->';
@@ -302,9 +330,11 @@ class ViewClass
           <div class="group10">
             <div id="keycheck">
             <form action="" method="post">
-            更新・削除キー　<input size="11" type="text" name="pass_word">
+            更新・削除キー　<input class="pass_word" size="11" type="text" name="pass_word">
             <input type="submit" name="keycheck" value="  確認  ">
             </form>
+            <br>
+            <input type="button" value="  戻る  " onclick="history.back();"><br>
             </div>
           </div>
       <!--(6:キー確認 END)-->';

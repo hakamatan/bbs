@@ -4,102 +4,125 @@
   /******************************/
   require_once('DBClass.php');
   require_once('ViewClass.php');
+  require_once('DataCheckClass.php');
 
-	try
-	{
-    //グループ一覧表示
-    $db = new DBClass();  //DB Open
-    $db->DBOpen();
-
+    $db = new DBClass();
     $view = new ViewClass();
 
+    //編集・削除ボタンクリック
     if(isset($_POST['update']) || isset($_POST['delete']))
     {
       $view->board_id = $_GET['board_id'];
-      $view->pagetitle = '更新・削除キーチェック';
+      $view->pagetitle = $view->pagetitlearray['keycheck'];
       $view->contents = $view->htmlKeyCheck();
       echo $view->htmlView();
       return;
     }
-
+    
+        //更新・削除キーチェック
+    $updelkey = '';
     if(isset($_POST['keycheck']))
     {
-      $comment_id = $_GET['comment_id'];
-      $pass_word = $_POST['pass_word'];
+      $updelkey = $_GET['comment_id'];
 
-      $sql = 'select id, board_id, contents, create_at,name, pass_word, Imgfile, up_date, title from comment
-              where id = '.$comment_id;
-      print $sql.'<br>';
-      $sqlret = $db->SelectCol($sql);
-      foreach ($sqlret as $row)
+      //データチェック
+      $dc = new DataCheckClass();
+      if(!$dc->Pass_WordCheck($_POST['pass_word'], $_GET['comment_id']))
       {
-        $view->comment_id = $row['id'];
-        $view->board_id = $row['board_id'];
-        $view->comment = $row['contents'];
-        $view->add_date = $row['create_at'];
-        $view->handlename = $row['name'];
-        $view->pass_word = $row['pass_word'];
-        $view->up_date = $row['up_date'];
-        $view->title = $row['title'];
-     	}
-      //キーチェック
-      if($view->pass_word != $pass_word)
-      {
-        $db->DbClose(); //DB Close
-        $view->pagetitle = $view->htmlSpanRed('エラー');
-        $view->msg = $view->htmlSpanRed('キーが一致しません。');
+        $view->pagetitle = $view->htmlSpanRed($view->pagetitlearray['error']);
+        $view->msg = $view->htmlSpanRed($view->msgarray['keycheck']);
         $view->button = $view->htmlButtonType();
+        $view->contents = $view->htmlMessage();
+        echo $view->htmlView();
+        return;
+      }
+      
+      //削除
+      if(2 == $_GET['type'])
+      {
+        $cnt = $_GET['cnt'];
+        if (1 < $cnt)
+        {
+          $db->SetDeleteComment($_GET['comment_id']);
+        }
+        else
+        {
+          $db->SetDeleteBoard($_GET['board_id']);
+        }
+        $view->board_id = $_GET['board_id'];
+        $view->pagetitle = $view->pagetitlearray['delete'];
+        $view->msg = $view->msgarray['ok'];
+        $view->button = 1 < $cnt ? $view->htmlButtonType('2') : $view->htmlButtonType('1');
         $view->contents = $view->htmlMessage();
         echo $view->htmlView();
         return;
       }
     }
 
-    $view->board_id = $_GET['board_id'];
-
-    $sql = "select c.id as comment_id, c.title as ctitle, c.name, c.up_date, c.contents as comment, c.create_at, b.title as btitle from comment as c 
-join board as b on c.board_id = b.id where c.board_id = ".$view->board_id." order by c.id";
-    $sqlret = $db->SelectCol($sql);
+    //グループ一覧
     $contents = '';
-    $cnt = 0;
-    foreach ($sqlret as $row)
+    $body = '';
+    $subbody = '';
+    $cnt = 1;
+    $view->board_id = $_GET['board_id'];
+    $dt = $db->GetGroupView($view->board_id);
+    $view->urlfile = $view->urlarray['group'];
+    foreach ($dt as $dr)
     {
-      $view->comment_id = $row['comment_id'];
-      $view->title = $row['ctitle'];
-      $view->handlename = $row['name'];
-      $view->comment = $row['comment'];
-      $adddate = $row['create_at'];
-      $update = $row['up_date'];
-      $view->up_date = ('0000-00-00 00:00:00' == $update ? $adddate : $update);
-      $contents .= (1 > $cnt ? $view->htmlGroupView() : $view->htmlSubGroupView());
+      $view->comment_id = $dr['comment_id'];
+      $view->title = $dr['title'];
+      $view->handlename = $dr['handlename'];
+      $view->comment = $dr['comment'];
+      $view->up_date = $dr['up_date'];
+      $view->cnt = $cnt;
+      if(2 > $cnt)
+      {//1件目
+        $retitle = 'Re:'.$view->title;
+        $body .= $view->htmlGroupViewFirst();
+      }
+      else
+      {
+        $subbody .= $view->htmlSubGroupView();
+      }
+      if($updelkey == $view->comment_id)
+      {
+        $up_comment_id = $dr['comment_id'];
+        $up_board_id = $dr['board_id'];
+        $up_comment = $dr['comment'];
+        $up_title = $dr['title'];
+        $up_handlename = $dr['handlename'];
+        $up_pass_word = $dr['pass_word'];
+      }
       $cnt++;
    	}
-    $contents .= $view->htmlGroupViewEnd();
+    $contents .= $view->htmlGroupView($body, $subbody);
 
-    $db->DbClose(); //DB Close
-
-    //コメント入力
-    $view->urlfile = 'insertcheck.php?type=2&comment_id='.$view->comment_id;
-    $contents .= (isset($_POST['keycheck']) ? $view->htmlCommentInput() : $view->htmlCommentNewInput());
-    //$contents .= $view->htmlCommentNewInput();
+    //コメント入力部
+    $keycheck = '&board_id='.$view->board_id;
+    $url = '';
+    if(isset($_POST['keycheck']))
+    {//更新
+      $view->comment_id = $up_comment_id;
+      $view->board_id = $up_board_id;
+      $view->comment = $up_comment;
+      $view->title = $up_title;
+      $view->handlename = $up_handlename;
+      $view->pass_word = $up_pass_word;
+      $url = $view->urlarray['edit'];
+      $url .= $keycheck.'&comment_id='.$view->comment_id;
+    }
+    else
+    {//返信新規
+      $url = $view->urlarray['returnadd'];
+      $url.= $keycheck;
+    }
+    $view->urlfile = $url;
+    $contents .= (isset($_POST['keycheck']) ? $view->htmlCommentInput() : $view->htmlCommentNewInput($retitle));
 
     //表示
-    $view->pagetitle = 'コメント入力';
+    $view->pagetitle = $view->pagetitlearray['add'];
     $view->contents = $contents;
     echo $view->htmlView();
     return;
-    
-
-	}
-	catch (PDOException $e)
-	{//異常終了
-    //失敗画面表示
-    $view->pagetitle = $view->htmlSpanRed('エラー：異常終了');
-    $view->msg = $view->htmlSpanRed($e->getMessage());
-    $view->button = $view->htmlButtonType();
-    $view->contents = $view->htmlMessage();
-    echo $view->htmlView();
-    die();
-	}
 
 ?>
