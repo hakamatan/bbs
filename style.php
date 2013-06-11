@@ -1,3 +1,4 @@
+<?php header('Content-Type: text/css; charset=utf-8'); ?>
 * {
   padding:0px;
   margin:0px;
@@ -24,6 +25,15 @@ body {
   padding-top: 5px;
   text-align:right;
 }
+
+#homelnk ul{
+  list-style-type:none;
+}
+
+#homelnk li{
+  display:inline;
+}
+
 #pagetitle {
   background-color        : #ffffd9;
   border-bottom     : 1px solid #cccccc;

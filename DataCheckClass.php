@@ -8,7 +8,10 @@ class DataCheckClass
         'handlename' => '名前',
         'title' => 'タイトル',
         'comment'=> 'メッセージ',
-        'pass_word' => '更新・削除キー');
+        'pass_word' => '更新・削除キー',
+        'admin_id' => '管理者ＩＤ',
+        'admin_pass_word' => 'パスワード',
+);
 
   /******************************/
   //  チェック項目
@@ -38,6 +41,17 @@ class DataCheckClass
           $ret.= $this->AlphaNumeralCheck($value, $this->itemnamearray['pass_word']);
           //echo '-->'.$key.';<br>';
           break;
+        case 'admin_id';
+          $ret.= $this->EmptyCheck($value, $this->itemnamearray['admin_id']);
+          //echo '-->'.$key.';<br>';
+          break;
+        case 'admin_pass_word';
+          $ret.= $this->EmptyCheck($value, $this->itemnamearray['admin_pass_word']);
+          $ret.= $this->LengthCheck($value, $this->itemnamearray['admin_pass_word'], 4);
+          $ret.= $this->AlphaNumeralCheck($value, $this->itemnamearray['admin_pass_word']);
+          //echo '-->'.$key.';<br>';
+          break;
+
         default:
           break;
       }
@@ -53,7 +67,7 @@ class DataCheckClass
     $ret='';
     if(strlen($item)==0)
     {
-      return $itemname.'&nbsp;を入力してください。<br>';
+      return sprintf("%s  を入力してください。<br>", $itemname);
     }
     return $ret;
   }
@@ -66,7 +80,7 @@ class DataCheckClass
     $ret='';
     if(strlen($item)!=$len)
     {
-      return $itemname.'&nbsp;は半角文字&nbsp;'.$len.'&nbsp;桁を入力してください。<br>';
+      return sprintf("%s は半角文字 %s 桁を入力してください。<br>", $itemname, $len);
     }
     return $ret;
   }
@@ -79,7 +93,7 @@ class DataCheckClass
     $ret='';
     if (!preg_match("/^[a-zA-Z0-9]+$/",$item))
     {
-      return $ret = $itemname.'&nbsp;は 半角英数字で入力してください。<br>';
+      return sprintf("%s は 半角英数字で入力してください。<br>", $itemname);
     }
     return $ret;
   }
@@ -91,11 +105,54 @@ class DataCheckClass
   {
     $db = new DBClass();
     $dt = $db->GetComment($comment_id);
+    $dr_pass_word = null;
     foreach ($dt as $dr)
     {
-      print $pass_word.','.$dr['pass_word'].';<br>';
-       return $pass_word != $dr['pass_word'] ? false : true;
+      //print $pass_word.','.$dr['pass_word'].';<br>';
+      //return $pass_word != $dr['pass_word'] ? false : true;
+      $dr_pass_word = $dr['pass_word'];
     }
+    if($pass_word != $dr_pass_word)
+    {
+      return '認証できません。';
+    }
+  }
+
+  /******************************/
+  //  管理者ＩＤチェック
+  /******************************/
+  function AdminCheck($admin_id, $admin_pass_word, $type = '')
+  {
+    $db = new DBClass();
+    $dt = $db->GetAdminInfo($comment_id);
+    $dr_admin_id = null;
+    $dr_admin_pass_word = null;
+    foreach ($dt as $dr)
+    {
+      //print $pass_word.','.$dr['pass_word'].';<br>';
+      $dr_admin_id = $dr['pass_word'];
+      $dr_admin_pass_word = $dr['admin_pass_word'];
+    }
+
+    $ret = '';
+    if($type != '')
+    {//認証チェック
+      if($admin_id != $dr_admin_id)
+      {
+        return '管理者ＩＤが存在しません。'.'<br>';
+      }
+      if($admin_pass_word != $dr_admin_pass_word)
+      {
+        return 'パスワードが違います。'.'<br>';
+      }
+      return $ret;
+    }
+
+    if($admin_id == $dr_admin_id)
+    {
+      return '入力されたＩＤは使えません。'.'<br>';
+    }
+    return $ret;
   }
 
 }

@@ -77,8 +77,7 @@ class DBClass
     $view = new ViewClass();
     $pagetitle = $type != '' ? $view->pagetitlearray['error'] : $view->pagetitlearray['exception'];
     $view->pagetitle = $view->htmlSpanRed($pagetitle);
-    $view->msg = $view->htmlSpanRed($e);
-    $view->button = $view->htmlButtonType();
+    $view->msg = $e;
     $view->contents = $view->htmlErrMessage();
     echo $view->htmlView();
     die();
@@ -193,7 +192,7 @@ class DBClass
   /******************************/
   //新規コメント追加
   /******************************/
-  function SetComment()
+  function AddComment()
   {
     try
     {
@@ -214,7 +213,7 @@ class DBClass
       $this->sql_param = array('board_id' => $board_id, 'contents' => $this->comment, 'handlename' => $this->handlename, 'pass_word' => $this->pass_word, 'title' => $this->title);
       $this->InsertData();
 
-      $this->DbClose(); //DB Close
+      $this->DbClose();
   	}
   	catch (PDOException $e)
   	{//異常終了
@@ -225,7 +224,7 @@ class DBClass
   /******************************/
   //新規コメント追加
   /******************************/
-  function SetCommentReturn()
+  function AddCommentReturn()
   {
     try
     {
@@ -238,7 +237,31 @@ class DBClass
       $this->sql_param = array('board_id' => $this->board_id, 'contents' => $this->comment, 'handlename' => $this->handlename, 'pass_word' => $this->pass_word, 'title' => $this->title);
       $this->InsertData();
 
-      $this->DbClose(); //DB Close
+      $this->DbClose();
+  	}
+  	catch (PDOException $e)
+  	{//異常終了
+      $this->ErrException($e->getMessage());
+    }
+  }
+
+  /******************************/
+  //新規管理者情報追加
+  /******************************/
+  function AddAdminInfo()
+  {
+    try
+    {
+      $this->DBOpen();
+      
+      //コメントデータ追加
+      $item = "admin_id, admin_pass_word";
+      $val = ":admin_id, :admin_pass_word";
+      $this->sql = $this->GetInsertSql("user", $item, $val);
+      $this->sql_param = array('admin_id' => $this->admin_id, 'admin_pass_word' => $this->admin_pass_word);
+      $this->InsertData();
+
+      $this->DbClose();
   	}
   	catch (PDOException $e)
   	{//異常終了
@@ -249,7 +272,7 @@ class DBClass
   /******************************/
   //コメント更新
   /******************************/
-  function SetCommentUpdate($comment_id)
+  function EditComment($comment_id)
   {
     try
     {
@@ -263,7 +286,7 @@ class DBClass
       //print '▲up$sql-->'.$sql.';<br>'.
       $this->InsertData();
 
-      $this->DbClose(); //DB Close
+      $this->DbClose();
   	}
   	catch (PDOException $e)
   	{//異常終了
@@ -273,7 +296,7 @@ class DBClass
   /******************************/
   //コメント削除
   /******************************/
-  function SetDeleteComment($comment_id)
+  function DeleteComment($comment_id)
   {
     try
     {
@@ -284,7 +307,7 @@ class DBClass
       $this->sql_param = array('comment_id' => $comment_id);
       $this->DeleteData();
 
-      $this->DbClose(); //DB Close
+      $this->DbClose();
   	}
   	catch (PDOException $e)
   	{//異常終了
@@ -295,27 +318,23 @@ class DBClass
   /******************************/
   //  コメント・ボード削除
   /******************************/
-  function SetDeleteBoard($board_id)
+  function DeleteBoard($board_id)
   {
     try
     {
-      $ret = false;
-      if($this->DBOpen())
-      {
-        //コメント削除
-        $sql = $this->GetDeleteSql("comment", "board_id = :board_id");
-        $sql_param = array('board_id' => $board_id);
-        if($this->DataExecute($sql,$sql_param))
-        {
-          //ボード削除
-          $sql = $this->GetDeleteSql("board", "id = :board_id");
-          $sql_param = array('board_id' => $board_id);
-          $ret = $this->DataExecute($sql,$sql_param);
-        }
-        $this->DbClose(); //DB Close
-        return $ret;
-      }
-      $this->OpenErr();
+      $this->DBOpen();
+
+      //ボード削除
+      $this->sql = $this->GetDeleteSql("board", "id = :board_id");
+      $this->sql_param = array('board_id' => $board_id);
+      $this->DeleteData();
+/*
+      //コメント削除
+      $this->sql = $this->GetDeleteSql("comment", "board_id = :board_id");
+      $this->sql_param = array('board_id' => $board_id);
+      $this->DeleteData();
+*/
+      $this->DbClose();
   	}
   	catch (PDOException $e)
   	{//異常終了
@@ -338,7 +357,7 @@ class DBClass
       //print '★->'.$sql.';<br>';
       $ret = $this->SelectData();
 
-      $this->DbClose(); //DB Close
+      $this->DbClose();
       return $ret;
   	}
   	catch (PDOException $e)
@@ -362,7 +381,7 @@ class DBClass
       //print '●->'.$sql.';<br>';
       $ret = $this->SelectData();
 
-      $this->DbClose(); //DB Close
+      $this->DbClose();
       return $ret;
   	}
   	catch (PDOException $e)
@@ -387,7 +406,32 @@ class DBClass
       // print $sql;
       $ret = $this->SelectData();
 
-      $this->DbClose(); //DB Close
+      $this->DbClose();
+      return $ret;
+  	}
+  	catch (PDOException $e)
+  	{//異常終了
+      $this->ErrException($e->getMessage());
+    }
+  }
+
+  /******************************/
+  //  管理者情報抽出
+  /******************************/
+  function GetAdminInfo($admin_id)
+  {
+    try
+    {
+      $this->DBOpen();
+
+      $val = "id, admin_id , admin_pass_word, comment_bk_color, title_bk_color";
+      $tbl = "user";
+      $where = "where admin_id = '".$admin_id."'";
+      $this->sql = $this->GetSelectSql($val, $tbl, $where);
+      // print $sql;
+      $ret = $this->SelectData();
+
+      $this->DbClose();
       return $ret;
   	}
   	catch (PDOException $e)

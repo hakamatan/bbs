@@ -14,6 +14,8 @@ class ViewClass
         'update'=>'更新処理',
         'delete'=>'削除処理',
         'inputcheck'=>'コメント入力確認',
+        'adminlogin'=>'管理者ログイン',
+        'adminsetting'=>'管理者設定',
         'keycheck'=>'更新・削除キーチェック');
   
   //ファイル
@@ -22,12 +24,12 @@ class ViewClass
         'add'=>'insert.php?type=1',
         'returnadd'=>'insert.php?type=2',
         'edit'=>'insert.php?type=3',
-        'group'=>'selectgroup.php');
+        'group'=>'selectgroup.php',
+        'group'=>'admin.php');
 
   //ファイル
   public $msgarray = array(
-        'ok'=>'正常に処理されました。',
-        'keycheck'=>'キーが一致しません。');
+        'ok'=>'正常に処理されました。');
 
   //プロパティ
   public $contents;
@@ -56,7 +58,7 @@ class ViewClass
     $ret .= '
     <head>
     	<meta http-equiv="Contrnt-Type" content="text/html; charset=UTF-8" />
-      <link href="css/common.css" rel="stylesheet" type="text/css" />
+      <link href="style.php" rel="stylesheet" type="text/css" />
     	<title>掲示板入門編</title>
     </head>';
     $ret .= '
@@ -65,7 +67,7 @@ class ViewClass
     <div id="maincontents">
       <br>
       <div id="maintitle"><h3>■　掲示板　■</h3></div>
-      <div id="homelnk"><a href="./">&nbsp;HOME&nbsp;</a></div>
+      <div id="homelnk"><ul><li><a href="./">HOME</a></li>&nbsp;|&nbsp;<li><a href="admin.php">管理者画面</a></li></ul></div>
       <div id="pagetitle">'.$this->pagetitle.'</div>
       <!--コンテンツ START -->
       <div id="contents">';
@@ -163,14 +165,18 @@ class ViewClass
   {
     switch ($val)
     {
-      case  '1':
+      case  'home':
         $url1 = 'http://'.$_SERVER['HTTP_HOST'].dirname($_SERVER['PHP_SELF']).'/index.php';
         $ret = '<input type="button" value="  戻る  " onclick="location.href=\''.$url1.'\'">';
         break;
-      case  '2':
+      case  'group':
         $url2 = 'http://'.$_SERVER['HTTP_HOST'].dirname($_SERVER['PHP_SELF']).'/selectgroup.php';
         $url2 .= '?board_id='.$this->board_id;
         $ret = '<input type="button" value="  戻る  " onclick="location.href=\''.$url2.'\'">';
+        break;
+      case  'admin':
+        $url1 = 'http://'.$_SERVER['HTTP_HOST'].dirname($_SERVER['PHP_SELF']).'/admin.php';
+        $ret = '<input type="button" value="  戻る  " onclick="location.href=\''.$url1.'\'">';
         break;
       default:
         $ret = '<input type="button" value="  戻る  " onclick="history.back();"><br>';
@@ -205,8 +211,8 @@ class ViewClass
       <!--(5:メッセージ表示 START)-->
           <div class="group10">
             <div id="msg">'.
-            $this->htmlSpanRed($this->msg).'<br>'.
-            $this->button.'
+            $this->htmlSpanRed($this->msg).'<br>
+            <input type="button" value="  戻る  " onclick="history.back();"><br>
             </div>
           </div>
       <!--(5:メッセージ表示 END)-->';
@@ -338,5 +344,62 @@ class ViewClass
             </div>
           </div>
       <!--(6:キー確認 END)-->';
+  }
+
+  /***************************/
+  //管理者画面
+  /***************************/
+  function htmlAdminCheck()
+  {
+    return '
+    <!--(7:管理画面 START)-->
+        <div class="group0">
+          <div id="admincolor">
+          <form action="" method="post">
+          <table id="admin">
+          <tr><th>ログインＩＤ</th><td><input type="text" name="admin_id"></td></tr>
+          <tr><th>パスワード</th><td><input class="pass_word" maxlength="4" size="11" type="password" name="admin_pass_word">
+                    &nbsp;<span class="small">４桁の英数字</span></td></tr>
+          <tr><th></th><td class="right"><input type="submit" name="add" value="  登録  ">
+                            <input type="submit" name="check" value="  確認  "></td></tr>
+          </table>
+          </form>
+          </div>
+        </div>
+    <!--(7:管理画面 END)-->';
+  }
+
+  /***************************/
+  //管理者画面
+  /***************************/
+  function htmlAdminSetting()
+  {
+    return '
+    <!--(8:管理画面 色 START)-->
+        <div class="group0">
+          <div id="admin">
+          <form action="" method="post">
+          <table id="admin">
+          <tr><th>掲示板背景カラー</th><td>
+          <input type="radio" name="comcolor" value="#eee8aa" checked><font color="#eee8aa">■</font>
+          <input type="radio" name="comcolor" value="#48d1cc"><font color="#48d1cc">■</font>
+          <input type="radio" name="comcolor" value="#e9967a"><font color="#e9967a">■</font>
+          <input type="radio" name="comcolor" value="#bc8f8f"><font color="#bc8f8f">■</font>
+          <input type="radio" name="comcolor" value="#ffa500"><font color="#ffa500">■</font>
+          </td></tr>
+          <tr><th>掲示板一覧カラー</th><td>
+          <input type="radio" name="viewcolor" value="#eee8aa" checked><font color="#eee8aa">●</font>
+          <input type="radio" name="viewcolor" value="#48d1cc"><font color="#48d1cc">●</font>
+          <input type="radio" name="viewcolor" value="#e9967a"><font color="#e9967a">●</font>
+          <input type="radio" name="viewcolor" value="#bc8f8f"><font color="#bc8f8f">●</font>
+          <input type="radio" name="viewcolor" value="#ffa500"><font color="#ffa500">●</font>
+          </td></tr>
+          <tr><th></th><td class="right"><input type="submit" name="add" value="  書込み  ">
+                            <input type="reset" name="cancel" value="  戻る  "></td></tr>
+          </table>
+          </form>
+          </div>
+        </div>
+    <!--(8:管理画面 色 END)-->';
   }
 }

@@ -12,6 +12,8 @@
     $pass_word = $_POST['pass_word'];
     
     //エスケープ文字の除去とタグの無効化
+    $comment = htmlspecialchars(stripcslashes($handlename));
+    $comment = htmlspecialchars(stripcslashes($title));
     $comment = htmlspecialchars(stripcslashes($comment));
 
     $view = new ViewClass();
@@ -22,13 +24,10 @@
       //データチェック
       $dc = new DataCheckClass();
       $itemarray = array('handlename' => $handlename, 'title' => $title, 'comment' => $comment, 'pass_word'=> $pass_word);
-      $msg = $dc->InputDataCheck($itemarray);
-      if(strlen($msg)>0)
+      $view->msg = $dc->InputDataCheck($itemarray);
+      if(strlen($view->msg) > 0)
       {//エラーあり
-        //失敗画面表示
         $view->pagetitle = $view->htmlSpanRed($view->pagetitlearray['error']);
-        $view->msg = $view->htmlSpanRed($msg);
-        $view->button = $view->htmlButtonType();
         $view->contents = $view->htmlErrMessage();
         echo $view->htmlView();
         return;
@@ -45,13 +44,11 @@
       return;
     }
 
-
     if(isset($_POST['insert']))
     {
-      $type = $_GET['type'];
-      
-      $db = new DBClass();  //DB Open
-      switch ($type)
+      $db = new DBClass();
+
+      switch ($_GET['type'])
       {
         case 1:
           //コメント追加
@@ -60,11 +57,11 @@
           $db->handlename = $handlename;
           $db->pass_word  = $pass_word;
           
-          $db->SetComment();
+          $db->AddComment();
           
           $view->pagetitle = $view->pagetitlearray['insert'];
           $view->msg = $view->msgarray['ok'];
-          $view->button = $view->htmlButtonType('1');
+          $view->button = $view->htmlButtonType('home');
           $view->contents = $view->htmlMessage();
           echo $view->htmlView();
           return;
@@ -80,11 +77,11 @@
           $db->handlename = $handlename;
           $db->pass_word  = $pass_word;
           
-          $db->SetCommentReturn();
+          $db->AddCommentReturn();
           
           $view->pagetitle = $view->pagetitlearray['insert'];
           $view->msg = $view->msgarray['ok'];
-          $view->button = $view->htmlButtonType('2');
+          $view->button = $view->htmlButtonType('group');
           $view->contents = $view->htmlMessage();
           echo $view->htmlView();
           return;
@@ -102,11 +99,11 @@
           $db->board_id  = $view->board_id;
           $db->comment_id = $comment_id;
 
-          $db->SetCommentUpdate($comment_id);
+          $db->EditComment($comment_id);
 
           $view->pagetitle = $view->pagetitlearray['update'];
           $view->msg = $view->msgarray['ok'];
-          $view->button = $view->htmlButtonType('2');
+          $view->button = $view->htmlButtonType('group');
           $view->contents = $view->htmlMessage();
           echo $view->htmlView();
           return;

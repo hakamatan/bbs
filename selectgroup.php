@@ -27,12 +27,12 @@
 
       //データチェック
       $dc = new DataCheckClass();
-      if(!$dc->Pass_WordCheck($_POST['pass_word'], $_GET['comment_id']))
+      $view->msg = $dc->Pass_WordCheck($_POST['pass_word'], $_GET['comment_id']);
+      if(strlen($view->msg) > 0)
+      //if(!$dc->Pass_WordCheck($_POST['pass_word'], $_GET['comment_id']))
       {
         $view->pagetitle = $view->htmlSpanRed($view->pagetitlearray['error']);
-        $view->msg = $view->htmlSpanRed($view->msgarray['keycheck']);
-        $view->button = $view->htmlButtonType();
-        $view->contents = $view->htmlMessage();
+        $view->contents = $view->htmlErrMessage();
         echo $view->htmlView();
         return;
       }
@@ -43,16 +43,17 @@
         $cnt = $_GET['cnt'];
         if (1 < $cnt)
         {
-          $db->SetDeleteComment($_GET['comment_id']);
+          $db->DeleteComment($_GET['comment_id']);
         }
         else
         {
-          $db->SetDeleteBoard($_GET['board_id']);
+          $db->DeleteBoard($_GET['board_id']);
+          $db->DeleteComment($_GET['comment_id']);
         }
         $view->board_id = $_GET['board_id'];
         $view->pagetitle = $view->pagetitlearray['delete'];
         $view->msg = $view->msgarray['ok'];
-        $view->button = 1 < $cnt ? $view->htmlButtonType('2') : $view->htmlButtonType('1');
+        $view->button = 1 < $cnt ? $view->htmlButtonType('group') : $view->htmlButtonType('home');
         $view->contents = $view->htmlMessage();
         echo $view->htmlView();
         return;
