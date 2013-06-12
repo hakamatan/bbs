@@ -1,10 +1,13 @@
 <?php
-  /******************************/
-  /*  入力チェック  */
-  /******************************/
+/*************************************************/
+//  入力チェッククラス
+/*************************************************/
 class DataCheckClass
 { 
-  public $itemnamearray = array(  
+  /******************************/
+  //  項目名
+  /******************************/
+  private $itemnamearray = array(  
         'handlename' => '名前',
         'title' => 'タイトル',
         'comment'=> 'メッセージ',
@@ -24,31 +27,31 @@ class DataCheckClass
       switch ($key)
       {
         case 'handlename':
-          $ret.= $this->EmptyCheck($value, $this->itemnamearray['handlename']);
+          $ret.= $this->EmptyCheck($value, $this->itemnamearray[$key]);
           //echo '-->'.$key.';<br>';
           break;
         case 'title':
-          $ret.= $this->EmptyCheck($value, $this->itemnamearray['title']);
+          $ret.= $this->EmptyCheck($value, $this->itemnamearray[$key]);
           //echo '-->'.$key.';<br>';
           break;
         case 'comment';
-          $ret.= $this->EmptyCheck($value, $this->itemnamearray['comment']);
+          $ret.= $this->EmptyCheck($value, $this->itemnamearray[$key]);
           //echo '-->'.$key.';<br>';
           break;
         case 'pass_word';
-          $ret.= $this->EmptyCheck($value, $this->itemnamearray['pass_word']);
-          $ret.= $this->LengthCheck($value, $this->itemnamearray['pass_word'], 4);
-          $ret.= $this->AlphaNumeralCheck($value, $this->itemnamearray['pass_word']);
+          $ret.= $this->EmptyCheck($value, $this->itemnamearray[$key]);
+          $ret.= $this->LengthCheck($value, $this->itemnamearray[$key], 4);
+          $ret.= $this->AlphaNumeralCheck($value, $this->itemnamearray[$key]);
           //echo '-->'.$key.';<br>';
           break;
         case 'admin_id';
-          $ret.= $this->EmptyCheck($value, $this->itemnamearray['admin_id']);
+          $ret.= $this->EmptyCheck($value, $this->itemnamearray[$key]);
           //echo '-->'.$key.';<br>';
           break;
         case 'admin_pass_word';
-          $ret.= $this->EmptyCheck($value, $this->itemnamearray['admin_pass_word']);
-          $ret.= $this->LengthCheck($value, $this->itemnamearray['admin_pass_word'], 4);
-          $ret.= $this->AlphaNumeralCheck($value, $this->itemnamearray['admin_pass_word']);
+          $ret.= $this->EmptyCheck($value, $this->itemnamearray[$key]);
+          $ret.= $this->LengthCheck($value, $this->itemnamearray[$key], 4);
+          $ret.= $this->AlphaNumeralCheck($value, $this->itemnamearray[$key]);
           //echo '-->'.$key.';<br>';
           break;
 
@@ -123,14 +126,15 @@ class DataCheckClass
   /******************************/
   function AdminCheck($admin_id, $admin_pass_word, $type = '')
   {
+    //print sprintf("!admin_id=%s, admin_pass_word=%s, type =%s <br>", $admin_id, $admin_pass_word, $type);
     $db = new DBClass();
-    $dt = $db->GetAdminInfo($comment_id);
+    $dt = $db->GetAdminInfo($admin_id);
     $dr_admin_id = null;
     $dr_admin_pass_word = null;
     foreach ($dt as $dr)
     {
       //print $pass_word.','.$dr['pass_word'].';<br>';
-      $dr_admin_id = $dr['pass_word'];
+      $dr_admin_id = $dr['admin_id'];
       $dr_admin_pass_word = $dr['admin_pass_word'];
     }
 
@@ -148,6 +152,7 @@ class DataCheckClass
       return $ret;
     }
 
+    //print sprintf("!admin_id=%s, dr_admin_id=%s <br>", $admin_id, $dr_admin_id);
     if($admin_id == $dr_admin_id)
     {
       return '入力されたＩＤは使えません。'.'<br>';

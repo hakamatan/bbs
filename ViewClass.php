@@ -1,10 +1,12 @@
 <?php
-  /***************************/
-  //ViewClassクラス
-  /***************************/
+/*************************************************/
+//  ViewClassクラス
+/*************************************************/
 class ViewClass
 {
-  //ページタイトル
+  /****************************/
+  //  ページタイトル
+  /****************************/
   public $pagetitlearray = array(
         'add'=>'コメント入力',
         'edit'=>'コメント修正',
@@ -18,20 +20,26 @@ class ViewClass
         'adminsetting'=>'管理者設定',
         'keycheck'=>'更新・削除キーチェック');
   
-  //ファイル
+  /****************************/
+  //  ファイル
+  /****************************/
   public $urlarray = array(
         'home'=>'index.php',
         'add'=>'insert.php?type=1',
         'returnadd'=>'insert.php?type=2',
         'edit'=>'insert.php?type=3',
         'group'=>'selectgroup.php',
-        'group'=>'admin.php');
+        'admin'=>'admin.php');
 
-  //ファイル
+  /****************************/
+  //  メッセージ
+  /****************************/
   public $msgarray = array(
         'ok'=>'正常に処理されました。');
 
-  //プロパティ
+  /****************************/
+  //  プロパティ
+  /****************************/
   public $contents;
   public $pagetitle;
   public $handlename;
@@ -46,9 +54,11 @@ class ViewClass
   public $comment_id;
   public $urlfile;
   public $cnt;
+  public $admin_id;
+  public $admin_pass_word;
 
   /***************************/
-  //ページ
+  //  ページ
   /***************************/
   function htmlView()
   {
@@ -84,7 +94,7 @@ class ViewClass
   }
 
   /***************************/
-  //タイトル一覧
+  //  タイトル一覧
   /***************************/
   function htmlTitleView($TitleViewBody)
   {
@@ -102,7 +112,7 @@ class ViewClass
   }
 
   /***************************/
-  //タイトル一覧本体
+  //  タイトル一覧本体
   /***************************/
   function htmlTitleViewBody()
   {
@@ -115,7 +125,7 @@ class ViewClass
   }
 
   /***************************/
-  //コメント入力
+  //  コメント入力
   /***************************/
   function htmlCommentNewInput($title = '')
   {
@@ -128,7 +138,7 @@ class ViewClass
   }
 
   /***************************/
-  //コメント入力
+  //  コメント入力
   /***************************/
   function htmlCommentInput()
   {
@@ -151,7 +161,7 @@ class ViewClass
   }
 
   /***************************/
-  //テキストパーツ
+  //  テキストパーツ
   /***************************/
   function htmlSpanRed($val)
   {
@@ -159,7 +169,7 @@ class ViewClass
   }
 
   /***************************/
-  //ボタン
+  //  ボタン
   /***************************/
   function htmlButtonType($val ='')
   {
@@ -186,7 +196,7 @@ class ViewClass
   }
 
   /***************************/
-  //メッセージ
+  //  メッセージ
   /***************************/
   function htmlMessage()
   {
@@ -203,7 +213,7 @@ class ViewClass
   }
 
   /***************************/
-  //エラーメッセージ
+  //  エラーメッセージ
   /***************************/
   function htmlErrMessage()
   {
@@ -220,7 +230,7 @@ class ViewClass
   }
 
   /***************************/
-  //コメント入力確認
+  //  コメント入力確認
   /***************************/
   function htmlCommentCheck()
   {
@@ -247,7 +257,7 @@ class ViewClass
   }
 
   /***************************/
-  //グループ一覧
+  //  グループ一覧
   /***************************/
   function htmlGroupView($GroupView, $SubGroupView)
   {
@@ -263,7 +273,7 @@ class ViewClass
   }
 
   /***************************/
-  //グループ一覧
+  //  グループ一覧
   /***************************/
   function htmlGroupViewFirst()
   {
@@ -279,7 +289,7 @@ class ViewClass
   }
 
   /***************************/
-  //グループ一覧パーツ
+  //  グループ一覧パーツ
   /***************************/
   function htmlGroupViewComment()
   {
@@ -290,7 +300,7 @@ class ViewClass
   }
 
   /***************************/
-  //グループ一覧パーツ
+  //  グループ一覧パーツ
   /***************************/
   function htmlGroupViewButton()
   {
@@ -304,7 +314,7 @@ class ViewClass
   }
 
   /***************************/
-  //サブグループ一覧
+  //  サブグループ一覧
   /***************************/
   function htmlSubGroupView()
   {
@@ -327,7 +337,7 @@ class ViewClass
   }
 
   /***************************/
-  //更新・削除キー確認
+  //  更新・削除キー確認
   /***************************/
   function htmlKeyCheck()
   {
@@ -347,22 +357,21 @@ class ViewClass
   }
 
   /***************************/
-  //管理者画面
+  //  管理者画面
   /***************************/
   function htmlAdminCheck()
   {
     return '
     <!--(7:管理画面 START)-->
-        <div class="group0">
-          <div id="admincolor">
+        <div class="group10">
+          <div id="admin">
           <form action="" method="post">
-          <table id="admin">
+          <table>
           <tr><th>ログインＩＤ</th><td><input type="text" name="admin_id"></td></tr>
-          <tr><th>パスワード</th><td><input class="pass_word" maxlength="4" size="11" type="password" name="admin_pass_word">
+          <tr><th>パスワード</th><td><input class="pass_word" maxlength="4" size="11" type="pass_word" name="admin_pass_word">
                     &nbsp;<span class="small">４桁の英数字</span></td></tr>
-          <tr><th></th><td class="right"><input type="submit" name="add" value="  登録  ">
-                            <input type="submit" name="check" value="  確認  "></td></tr>
           </table>
+          <div><br><input type="submit" name="add" value="  登録  "><input type="submit" name="check" value="  確認  "></div>
           </form>
           </div>
         </div>
@@ -370,36 +379,68 @@ class ViewClass
   }
 
   /***************************/
-  //管理者画面
+  //  管理者画面
   /***************************/
-  function htmlAdminSetting()
+  function htmlAdminSetting($bk_color, $viewbk_color)
   {
+    print sprintf("htmlAdminSetting::bk_color=%s, viewbk_color=%s <br>",$bk_color, $viewbk_color);
     return '
     <!--(8:管理画面 色 START)-->
         <div class="group0">
-          <div id="admin">
+          <div id="adminlogout"><br>
           <form action="" method="post">
-          <table id="admin">
-          <tr><th>掲示板背景カラー</th><td>
-          <input type="radio" name="comcolor" value="#eee8aa" checked><font color="#eee8aa">■</font>
-          <input type="radio" name="comcolor" value="#48d1cc"><font color="#48d1cc">■</font>
-          <input type="radio" name="comcolor" value="#e9967a"><font color="#e9967a">■</font>
-          <input type="radio" name="comcolor" value="#bc8f8f"><font color="#bc8f8f">■</font>
-          <input type="radio" name="comcolor" value="#ffa500"><font color="#ffa500">■</font>
+          <p><b>'.$this->admin_id.'&nbsp;さん</b></p><br>
+          <input type="submit" name="logout" value="  ログアウト  ">
+          </form>
+          </div><br>
+          <div id="adminsetting">
+          <form action="" method="post">
+          <table>
+          <tr><th>掲示板背景カラー</th><td>'.$this->htmlColorRadioButton($this->comcolorarray, "comcolor", $bk_color).'
           </td></tr>
-          <tr><th>掲示板一覧カラー</th><td>
-          <input type="radio" name="viewcolor" value="#eee8aa" checked><font color="#eee8aa">●</font>
-          <input type="radio" name="viewcolor" value="#48d1cc"><font color="#48d1cc">●</font>
-          <input type="radio" name="viewcolor" value="#e9967a"><font color="#e9967a">●</font>
-          <input type="radio" name="viewcolor" value="#bc8f8f"><font color="#bc8f8f">●</font>
-          <input type="radio" name="viewcolor" value="#ffa500"><font color="#ffa500">●</font>
+          <tr><th>掲示板一覧カラー</th><td>'.$this->htmlColorRadioButton($this->viewcolor_array, "viewcolor", $viewbk_color).'
           </td></tr>
-          <tr><th></th><td class="right"><input type="submit" name="add" value="  書込み  ">
-                            <input type="reset" name="cancel" value="  戻る  "></td></tr>
+          <tr><th></th><td class="right"><input type="submit" name="setting" value="  設定  ">
+                            <input type="reset" name="cancel" value="  もとに戻す  "></td></tr>
           </table>
           </form>
           </div>
         </div>
     <!--(8:管理画面 色 END)-->';
   }
+
+  /***************************/
+  //  掲示板背景カラー
+  /***************************/
+  private $comcolorarray = array(
+        '#eee8aa'=>'■■',
+        '#48d1cc'=>'■■',
+        '#e9967a'=>'■■',
+        '#bc8f8f'=>'■■',
+        '#ffa500'=>'■■');
+
+  /***************************/
+  //  掲示板一覧カラー
+  /***************************/
+  private $viewcolor_array = array(
+        '#eee8aa'=>'●●',
+        '#48d1cc'=>'●●',
+        '#e9967a'=>'●●',
+        '#bc8f8f'=>'●●',
+        '#ffa500'=>'●●');
+
+  /***************************/
+  //  管理者カラーラジオボタン
+  /***************************/
+  function htmlColorRadioButton($radio_array, $name, $data)
+  {
+    $ret = "";
+    foreach($radio_array as $key => $val)
+    {
+      $checked = ($key == $data) ? " checked='checked'" : "";
+      $ret .= "<input type='radio' name='{$name}' value='{$key}'{$checked}><font color=\"".$key."\">".$val."</font>";
+    }
+    return $ret.'<br>';
+  }
+
 }

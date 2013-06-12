@@ -1,29 +1,36 @@
 <?php
-  /******************************/
-  //DBクラス
-  /******************************/
+/*************************************************/
+//  DBクラス
+/*************************************************/
 require_once('ViewClass.php');
 
 class DBClass
 {
+  /******************************/
+  //  DB定数
+  /******************************/
   private $dbdsn = 'mysql:dbname=training01;charset=utf8;host=127.0.0.1';
   private $dbuser = 'hakamata';
   private $dbpassword = 'nami';
   private $dbh;
   
-  //プロパティ
+  /******************************/
+  //  プロパティ
+  /******************************/
   public $title;
   public $board_id;
   public $comment;
   public $handlename;
   public $pass_word;
   public $comment_id;
-  
+  public $comment_bk_color;
+  public $comment_viewbk_color;
+
   private $sql = '';
   private $sql_param = '';
 
   /******************************/
-  //接続
+  //  接続
   /******************************/
   function DbOpen()
   {
@@ -40,11 +47,10 @@ class DBClass
     {
       $this->ErrException($e->getMessage());
     }
-
   }
 
   /******************************/
-  //切断
+  //  切断
   /******************************/
   function DbClose()
   {
@@ -52,7 +58,7 @@ class DBClass
   }
 
   /******************************/
-  //  異常終了
+  //  例外エラー
   /******************************/
   function ErrException($e)
   {
@@ -68,8 +74,8 @@ class DBClass
   }
 
   /******************************/
-  //  エラー
-    /******************************/
+  //  エラー処理
+  /******************************/
   function ErrDisplay($e, $type = '')
   {
     $this->DbClose(); //DB Close
@@ -84,7 +90,7 @@ class DBClass
   }
 
   /******************************/
-  //データ抽出
+  //  データ抽出
   /******************************/
   function GetSelectSql($val, $tbl, $where)
   {
@@ -92,7 +98,7 @@ class DBClass
   }
 
   /******************************/
-  //データ抽出
+  //  データ抽出
   /******************************/
   function SelectData()
   {
@@ -105,7 +111,7 @@ class DBClass
   }
 
   /******************************/
-  //実行
+  //  実行
   /******************************/
   function DataQuery($sql)
   {
@@ -113,7 +119,7 @@ class DBClass
   }
 
   /******************************/
-  //データ追加
+  //  データ追加コマンド
   /******************************/
   function GetInsertSql($tbl, $item, $val)
   {
@@ -121,7 +127,7 @@ class DBClass
   }
 
   /******************************/
-  //データ更新
+  //  データ更新コマンド
   /******************************/
   function GetUpdateSql($tbl, $val, $where)
   {
@@ -129,7 +135,7 @@ class DBClass
   }
 
   /******************************/
-  //データ削除
+  //  データ削除コマンド
   /******************************/
   function GetDeleteSql($tbl, $where)
   {
@@ -137,7 +143,7 @@ class DBClass
   }
 
   /******************************/
-  //データ追加
+  //  データ追加
   /******************************/
   function InsertData()
   {
@@ -148,7 +154,7 @@ class DBClass
   }
 
   /******************************/
-  //データ更新
+  //  データ更新
   /******************************/
   function UpdateData()
   {
@@ -159,7 +165,7 @@ class DBClass
   }
 
   /******************************/
-  //データ削除
+  //  データ削除
   /******************************/
   function DeleteData()
   {
@@ -170,7 +176,7 @@ class DBClass
   }
 
   /******************************/
-  //実行
+  //  実行
   /******************************/
   function DataExecute($sql, $sql_param)
   {
@@ -190,7 +196,7 @@ class DBClass
   }
 
   /******************************/
-  //新規コメント追加
+  //  新規コメント追加
   /******************************/
   function AddComment()
   {
@@ -222,7 +228,7 @@ class DBClass
   }
 
   /******************************/
-  //新規コメント追加
+  //  新規コメント追加（返信時）
   /******************************/
   function AddCommentReturn()
   {
@@ -246,7 +252,7 @@ class DBClass
   }
 
   /******************************/
-  //新規管理者情報追加
+  //  管理者情報追加
   /******************************/
   function AddAdminInfo()
   {
@@ -270,7 +276,7 @@ class DBClass
   }
 
   /******************************/
-  //コメント更新
+  //  コメント更新
   /******************************/
   function EditComment($comment_id)
   {
@@ -284,7 +290,7 @@ class DBClass
       //print '▲$sql-->'.$sql.';<br>';
       $this->sql_param = array('comment_id' => $comment_id, 'contents' => $this->comment, 'pass_word' => $this->pass_word, 'title' => $this->title, 'handlename' => $this->handlename,);
       //print '▲up$sql-->'.$sql.';<br>'.
-      $this->InsertData();
+      $this->UpdateData();
 
       $this->DbClose();
   	}
@@ -293,8 +299,35 @@ class DBClass
       $this->ErrException($e->getMessage());
     }
   }
+
   /******************************/
-  //コメント削除
+  //  管理者情報更新
+  /******************************/
+  function EditAdminInfo($admin_id)
+  {
+    try
+    {
+      $this->DBOpen();
+      $val = "comment_bk_color = :bk_color, comment_viewbk_color = :viewbk_color";
+      $where = "admin_id = :admin_id";
+
+      $this->sql = $this->GetUpdateSql("user", $val, $where);
+      //print sprintf("▲this->sql = %s <br>",$this->sql);
+      $this->sql_param = array('admin_id'=>$admin_id, 'bk_color'=>$this->comment_bk_color, 'viewbk_color'=>$this->comment_viewbk_color);
+      //print_r ($this->sql_param);
+      
+      $this->UpdateData();
+
+      $this->DbClose();
+  	}
+  	catch (PDOException $e)
+  	{//異常終了
+      $this->ErrException($e->getMessage());
+    }
+  }
+
+  /******************************/
+  //  コメント削除
   /******************************/
   function DeleteComment($comment_id)
   {
@@ -316,7 +349,7 @@ class DBClass
   }
 
   /******************************/
-  //  コメント・ボード削除
+  //  ボード削除
   /******************************/
   function DeleteBoard($board_id)
   {
@@ -343,7 +376,7 @@ class DBClass
   }
 
   /******************************/
-  //タイトル一覧
+  //  タイトル一覧抽出
   /******************************/
   function GetTitleView()
   {
@@ -367,7 +400,7 @@ class DBClass
   }
 
   /******************************/
-  //  グループ一覧
+  //  グループ一覧抽出
   /******************************/
   function GetGroupView($board_id)
   {
@@ -424,11 +457,11 @@ class DBClass
     {
       $this->DBOpen();
 
-      $val = "id, admin_id , admin_pass_word, comment_bk_color, title_bk_color";
+      $val = "admin_id , admin_pass_word, comment_bk_color, comment_viewbk_color";
       $tbl = "user";
       $where = "where admin_id = '".$admin_id."'";
       $this->sql = $this->GetSelectSql($val, $tbl, $where);
-      // print $sql;
+      print sprintf("this->sql=%s <br>", $this->sql);
       $ret = $this->SelectData();
 
       $this->DbClose();

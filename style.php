@@ -1,9 +1,27 @@
-<?php header('Content-Type: text/css; charset=utf-8'); ?>
+<?php 
+  header('Content-Type: text/css; charset=utf-8');
+
+  //セッション開始
+  session_start();
+
+  if(isset($_SESSION['admin_id']) && isset($_SESSION['admin_pass_word']))
+  {
+     $bk_color = $_SESSION['comment_bk_color'];
+     $viewbk_color = $_SESSION['comment_viewbk_color'];
+  }
+  else
+  {
+     $bk_color = '#BDB76B';
+     $viewbk_color = '#FFDEAD';
+  }
+?>
+
 * {
   padding:0px;
   margin:0px;
   font-size:14px;
 }
+
 body {
   width:800px;
   margin-right:auto;
@@ -70,10 +88,11 @@ body {
   word-wrap:break-word;
   width:600px;
   margin-top:10px;
-  margin-bottom:10px;;  
+  margin-bottom:10px;
   margin-right:auto;
-  margin-left:auto;  
-  background-color:#BDB76B;
+  margin-left:auto;
+  /*background-color:#BDB76B;*/
+  background-color:<?php echo $bk_color ?>;
   padding:5px;
   border: 1px solid #000000;
   clear:both;
@@ -108,7 +127,8 @@ body {
   margin-bottom:10px;;  
   margin-right:auto;
   margin-left:auto;  
-  background-color:#FFDEAD;
+  /*background-color:#FFDEAD;*/
+  background-color:<?php echo $viewbk_color ?>;
   padding5px;
 }
 
@@ -176,6 +196,11 @@ body {
   word-wrap:break-word;
 }
 
+#newdatacheck td{
+  text-align:left;
+  word-wrap:break-word;
+}
+
 #newdatacheck td.right{
   text-align:right;
   border:none;
@@ -201,3 +226,8 @@ body {
 .jpn {
   ime-mode:active;
 }
+
+#admin table th, td{
+  text-align:left;
+}
+
