@@ -6,9 +6,10 @@
   require_once('ViewClass.php');
   require_once('DataCheckClass.php');
 
+  session_cache_limiter('private, must-revalidate');
   //セッション開始
   session_start();
-
+  
   $view = new ViewClass();
 
   /*****************************/
@@ -51,20 +52,14 @@
     /*****************************/
     if(2 == $_GET['type'])
     {
-      $cnt = $_GET['cnt'];
-      if (1 < $cnt)
-      {
-        $db->DeleteComment($_GET['comment_id']);
-      }
-      else
-      {
-        $db->DeleteBoard($_GET['board_id']);
-        $db->DeleteComment($_GET['comment_id']);
-      }
-      $view->board_id = $_GET['board_id'];
       $view->pagetitle = $view->pagetitlearray['delete'];
-      $view->msg = $view->msgarray['ok'];
-      $view->button = 1 < $cnt ? $view->htmlButtonType('group') : $view->htmlButtonType('home');
+      $view->msg = '本当に削除していいですか？';
+      $urlyes = sprintf($view->urlarray['del'], $_GET['board_id'], $_GET['comment_id'],$_GET['cnt']);
+      $urlno = sprintf($view->urlarray['grp_add'], $_GET['board_id']);
+      print '$urlyes->'.$urlyes.';$urlno->'.$urlno.'<br>';
+      $view->urlfile = array($urlyes, $urlno);
+      $view->button = $view->buttonarray[2];
+      $view->button_name = array('delete','cancel');
       $view->contents = $view->htmlMessage();
       echo $view->htmlView();
       return;
@@ -80,8 +75,6 @@
   $cnt = 1;
 
   $dt = $db->GetGroupView($_GET['board_id']);
-  $view->board_id = $_GET['board_id'];
-  $view->urlfile = $view->urlarray['group'];
   foreach ($dt as $dr)
   {
     $view->comment_id = $dr['comment_id'];
@@ -90,6 +83,7 @@
     $view->comment = $dr['comment'];
     $view->up_date = $dr['up_date'];
     $view->cnt = $cnt;
+    $view->urlfile = sprintf($view->urlarray['grp_edit'], $_GET['board_id'], $dr['comment_id'], $cnt);
     if(2 > $cnt)
     {//1件目
       $retitle = 'Re:'.$view->title;
@@ -126,13 +120,11 @@
     $view->title = $up_title;
     $view->handlename = $up_handlename;
     $view->pass_word = $up_pass_word;
-    $url = $view->urlarray['edit'];
-    $url .= $keycheck.'&comment_id='.$view->comment_id;
+    $url = sprintf($view->urlarray['edit'], $_GET['board_id'], $_GET['comment_id']);
   }
   else
   {//返信新規
-    $url = $view->urlarray['returnadd'];
-    $url.= $keycheck;
+    $url = sprintf($view->urlarray['returnadd'], $_GET['board_id']);
   }
   $view->urlfile = $url;
   $contents .= (isset($_POST['keycheck']) ? $view->htmlCommentInput() : $view->htmlCommentNewInput($retitle));

@@ -8,13 +8,13 @@ class DataCheckClass
   //  項目名
   /******************************/
   private $itemnamearray = array(  
-        'handlename' => '名前',
-        'title' => 'タイトル',
-        'comment'=> 'メッセージ',
-        'pass_word' => '更新・削除キー',
-        'admin_id' => '管理者ＩＤ',
-        'admin_pass_word' => 'パスワード',
-);
+        'handlename'=>'名前',
+        'title'=>'タイトル',
+        'comment'=>'メッセージ',
+        'pass_word'=>'更新・削除キー',
+        'admin_id'=>'管理者ＩＤ',
+        'admin_pass_word' =>'パスワード'
+        );
 
   /******************************/
   //  チェック項目

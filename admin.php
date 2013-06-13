@@ -11,9 +11,9 @@
   $dc = new DataCheckClass();
   $db = new DBClass();
 
-  //セッション開始
+  //セッション
+  session_cache_limiter('private, must-revalidate');
   session_start();
-
 
   /*****************************/
   //  ログアウト
@@ -31,6 +31,8 @@
   $admin_pass_word = null;
   $comment_bk_color = null;
   $comment_viewbk_color = null;
+  $free_bk_color = null;
+  $free_viewbk_color = null;
 
   if(isset($_POST['add']) || isset($_POST['check']))
   {
@@ -42,7 +44,6 @@
     $view->msg = $dc->InputDataCheck($itemarray);
     if(strlen($view->msg) > 0)
     {//エラーあり
-      //Logout(); //データ破棄
       $view->pagetitle = $view->htmlSpanRed($view->pagetitlearray['error']);
       $view->contents = $view->htmlErrMessage();
       echo $view->htmlView();
@@ -57,7 +58,6 @@
       $view->msg = $dc->AdminCheck($admin_id, $admin_pass_word);
       if(strlen($view->msg) > 0)
       {//エラーあり
-        //Logout(); //データ破棄
         $view->pagetitle = $view->htmlSpanRed($view->pagetitlearray['error']);
         $view->contents = $view->htmlErrMessage();
         echo $view->htmlView();
@@ -90,7 +90,8 @@
       
       $view->pagetitle = $view->pagetitlearray['insert'];
       $view->msg = $view->msgarray['ok'];
-      $view->button = $view->htmlButtonType('admin');
+      $view->urlfile = $view->urlarray['admin'];
+      $view->button = $view->buttonarray[1];
       $view->contents = $view->htmlMessage();
       echo $view->htmlView();
       return;
@@ -105,7 +106,6 @@
       $view->msg = $dc->AdminCheck($admin_id, $admin_pass_word, 'check');
       if(strlen($view->msg) > 0)
       {//エラーあり
-        //Logout(); //データ破棄
         $view->pagetitle = $view->htmlSpanRed($view->pagetitlearray['error']);
         $view->contents = $view->htmlErrMessage();
         echo $view->htmlView();
@@ -129,13 +129,6 @@
       $_SESSION['admin_pass_word'] = $admin_pass_word;
       $_SESSION['comment_bk_color'] = $comment_bk_color;
       $_SESSION['comment_viewbk_color'] = $comment_viewbk_color;
-      
-    print sprintf ("ログイン直後 admin_id=%s, admin_pass_word=%s, comment_bk_color=%s, comment_viewbk_color=%s <br>",
-    $_SESSION['admin_id'],
-    $_SESSION['admin_pass_word'],
-    $_SESSION['comment_bk_color'],
-    $_SESSION['comment_viewbk_color']);
-
     }
   }
 
@@ -150,17 +143,26 @@
     $_SESSION['comment_bk_color'],
     $_SESSION['comment_viewbk_color']);
     */
-    $db->comment_bk_color = $_POST['comcolor'];
-    $db->comment_viewbk_color = $_POST['viewcolor'];
+    $comment_bk_color = $_POST['comcolor'];
+    $comment_viewbk_color = $_POST['viewcolor'];
+    $free_bk_color = $_POST['free_comcolor'];
+    $free_viewbk_color = $_POST['free_viewcolor'];
+    print sprintf ("更新ボタンcomment_bk_color->%s, comment_viewbk_color->%s <br>",
+    $_POST['comcolor'], $_POST['viewcolor'] 
+    );
+    
+    $db->comment_bk_color = 0 < strlen($comment_bk_color) ? $comment_bk_color : $free_bk_color;
+    $db->comment_viewbk_color = 0 < strlen($comment_viewbk_color) ? $comment_viewbk_color : $free_viewbk_color;
     $db->EditAdminInfo($_SESSION['admin_id']);
 
     //セッション変数定義
-    $_SESSION['comment_bk_color'] = $_POST['comcolor'];
-    $_SESSION['comment_viewbk_color'] = $_POST['viewcolor'];
+    $_SESSION['comment_bk_color'] = $db->comment_bk_color;
+    $_SESSION['comment_viewbk_color'] = $db->comment_viewbk_color;
     
     $view->pagetitle = $view->pagetitlearray['update'];
     $view->msg = $view->msgarray['ok'];
-    $view->button = $view->htmlButtonType('admin');
+    $view->urlfile = $view->urlarray['admin'];
+    $view->button = $view->buttonarray[1];
     $view->contents = $view->htmlMessage();
     echo $view->htmlView();
     return;

@@ -5,6 +5,7 @@
   require_once('DBClass.php');
   require_once('ViewClass.php');
 
+  session_cache_limiter('private, must-revalidate');
   //セッション開始
   session_start();
 

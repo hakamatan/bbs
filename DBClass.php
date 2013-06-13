@@ -314,7 +314,7 @@ class DBClass
       $this->sql = $this->GetUpdateSql("user", $val, $where);
       //print sprintf("▲this->sql = %s <br>",$this->sql);
       $this->sql_param = array('admin_id'=>$admin_id, 'bk_color'=>$this->comment_bk_color, 'viewbk_color'=>$this->comment_viewbk_color);
-      //print_r ($this->sql_param);
+      print_r ($this->sql_param);
       
       $this->UpdateData();
 
