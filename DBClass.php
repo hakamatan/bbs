@@ -30,6 +30,11 @@ class DBClass
   private $sql_param = '';
 
   /******************************/
+  //  定数
+  /******************************/
+  public $pagelimit = 5;
+
+  /******************************/
   //  接続
   /******************************/
   function DbOpen()
@@ -264,6 +269,7 @@ class DBClass
       $item = "admin_id, admin_pass_word";
       $val = ":admin_id, :admin_pass_word";
       $this->sql = $this->GetInsertSql("user", $item, $val);
+      //print printf("(AddAdminInfo) admin_id' => %s, 'admin_pass_word' => %s <br>",$this->admin_id, $this->admin_pass_word);
       $this->sql_param = array('admin_id' => $this->admin_id, 'admin_pass_word' => $this->admin_pass_word);
       $this->InsertData();
 
@@ -287,9 +293,7 @@ class DBClass
       $where = "id = :comment_id";
 
       $this->sql = $this->GetUpdateSql("comment", $val, $where);
-      //print '▲$sql-->'.$sql.';<br>';
       $this->sql_param = array('comment_id' => $comment_id, 'contents' => $this->comment, 'pass_word' => $this->pass_word, 'title' => $this->title, 'handlename' => $this->handlename,);
-      //print '▲up$sql-->'.$sql.';<br>'.
       $this->UpdateData();
 
       $this->DbClose();
@@ -312,10 +316,7 @@ class DBClass
       $where = "admin_id = :admin_id";
 
       $this->sql = $this->GetUpdateSql("user", $val, $where);
-      //print sprintf("▲this->sql = %s <br>",$this->sql);
       $this->sql_param = array('admin_id'=>$admin_id, 'bk_color'=>$this->comment_bk_color, 'viewbk_color'=>$this->comment_viewbk_color);
-      print_r ($this->sql_param);
-      
       $this->UpdateData();
 
       $this->DbClose();
@@ -378,16 +379,29 @@ class DBClass
   /******************************/
   //  タイトル一覧抽出
   /******************************/
-  function GetTitleView()
+  function GetTitleView($strat = '')
   {
     try
     {
+      $valplus = "";
+      $whereplus = "";
+      if($strat == '')
+      {//全件数
+        $valplus .= ", count(*) as count";
+      }
+      else
+      {
+        $whereplus .= sprintf(" limit %d, %d", $strat, $this->pagelimit);
+      }
+
       $this->DBOpen();
       $val = "b.title, b.id as board_id, c.name as handlename, b.created_at as add_date, c.created_at as up_date, c.title as subject";
+      $val .= $valplus;
       $tbl = " board as b left join (select min( board_id ) as board_id, max(created_at) as created_at, name, title from comment group by board_id) as c on b.id = c.board_id";
       $where = "order by b.id desc";
+      $where .= $whereplus;
       $this->sql = $this->GetSelectSql($val, $tbl, $where);
-      //print '★->'.$sql.';<br>';
+      print '(GetTitleView)'.$this->sql.';<br>';
       $ret = $this->SelectData();
 
       $this->DbClose();
@@ -411,7 +425,6 @@ class DBClass
       $tbl = "comment as c join board as b on c.board_id = b.id";
       $where = "where c.board_id = ".$board_id." order by c.id";
       $this->sql = $this->GetSelectSql($val, $tbl, $where);
-      //print '●->'.$sql.';<br>';
       $ret = $this->SelectData();
 
       $this->DbClose();
@@ -436,7 +449,6 @@ class DBClass
       $tbl = "comment";
       $where = "where id = ".$comment_id;
       $this->sql = $this->GetSelectSql($val, $tbl, $where);
-      // print $sql;
       $ret = $this->SelectData();
 
       $this->DbClose();
@@ -448,6 +460,41 @@ class DBClass
     }
   }
 
+  /******************************/
+  //  キーワードコメント抽出
+  /******************************/
+  function GetCommentView($word, $terms)
+  {
+    try
+    {
+      $this->DBOpen();
+
+      $val = "id as comment_id, board_id, contents as comment, created_at as up_date, name as handlename, pass_word, title";
+      $tbl = "comment";
+
+      $cnt = count($word);
+      $where = "";
+      if(0 < $cnt)
+      {//検索ワードあり
+        $where .= "where contents LIKE '%".$word[0]."%'";
+        for ($i = 1; $i < $cnt; $i++)
+        {
+          $where .= ($terms == 'or') ? " or contents LIKE '%".$word[$i]."%'" : " and contents LIKE '%".$word[$i]."%'";
+        }
+      }
+      $this->sql = $this->GetSelectSql($val, $tbl, $where);
+      print '(GetCommentView)'.$this->sql;
+      $ret = $this->SelectData();
+      
+      $this->DbClose();
+      return $ret;
+    }
+    catch (PDOException $e)
+  	{//異常終了
+      $this->ErrException($e->getMessage());
+    }
+
+  }
   /******************************/
   //  管理者情報抽出
   /******************************/
@@ -461,7 +508,6 @@ class DBClass
       $tbl = "user";
       $where = "where admin_id = '".$admin_id."'";
       $this->sql = $this->GetSelectSql($val, $tbl, $where);
-      print sprintf("this->sql=%s <br>", $this->sql);
       $ret = $this->SelectData();
 
       $this->DbClose();
@@ -472,5 +518,6 @@ class DBClass
       $this->ErrException($e->getMessage());
     }
   }
+
 }
 ?>

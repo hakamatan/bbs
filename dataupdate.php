@@ -6,9 +6,9 @@
   require_once('ViewClass.php');
   require_once('DataCheckClass.php');
 
-  //セッション開始
-  session_start();
+  //セッション
   session_cache_limiter('private, must-revalidate');
+  session_start();
 
   $db = new DBClass();
   $view = new ViewClass();
@@ -16,20 +16,25 @@
   /*****************************/
   //  コメント削除
   /*****************************/
-  if(isset($_POST['delete']))
+  if(isset($_POST['btn_delete']))
   {
-    if(2 > $_GET['cnt'])
+    $board_id_ = $_GET['board_id'];
+    $comment_id_ = $_GET['comment_id'];
+    $cnt_ = $_GET['cnt'];
+    
+    if(2 > $cnt_)
     {//1件目
-      $db->DeleteBoard($_GET['board_id']);
-      $db->DeleteComment($_GET['comment_id']);
+      $db->DeleteBoard($board_id_);
+      $db->DeleteComment($comment_id_);
     }
     else
     {
-      $db->DeleteComment($_GET['comment_id']);
+      $db->DeleteComment($comment_id_);
     }
     $view->pagetitle = $view->pagetitlearray['delete'];
     $view->msg = $view->msgarray['ok'];
-    $view->urlfile = 2 > $_GET['cnt'] ? $view->urlarray['home'] : sprintf($view->urlarray['grp_add'], $_GET['board_id']);    $view->button = $view->buttonarray[1];
+    $view->urlfile = 2 > $cnt_ ? $view->urlarray['home'] : sprintf($view->urlarray['grp_add'], $board_id_);
+    $view->button = $view->buttonarray[1];
     $view->contents = $view->htmlMessage();
     echo $view->htmlView();
     return;
@@ -38,28 +43,28 @@
   /*****************************/
   //  コメント入力確認
   /*****************************/
-  if(isset($_POST['insertchk']) || isset($_POST['insert']))
+  if(isset($_POST['btn_insertchk']) || isset($_POST['btn_insert']))
   {
-    $handlename = $_POST['handlename'];
-    $title = $_POST['title'];
-    $comment = $_POST['comment'];
-    $pass_word = $_POST['pass_word'];
+    $handlename_ = $_POST['handlename'];
+    $title_ = $_POST['title'];
+    $comment_ = $_POST['comment'];
+    $pass_word_ = $_POST['pass_word'];
  
     /*****************************/
     //  エスケープ文字の除去とタグの無効化
     /*****************************/
-    $handlename = htmlspecialchars(stripcslashes($handlename));
-    $title = htmlspecialchars(stripcslashes($title));
-    $comment = htmlspecialchars(stripcslashes($comment));
+    $handlename_ = htmlspecialchars(stripcslashes($handlename_));
+    $title_ = htmlspecialchars(stripcslashes($title_));
+    $comment_ = htmlspecialchars(stripcslashes($comment_));
 
     /*****************************/
     //  入力確認ボタンクリック
     /*****************************/
-    if(isset($_POST['insertchk']))
+    if(isset($_POST['btn_insertchk']))
     {
       //データチェック
       $dc = new DataCheckClass();
-      $itemarray = array('handlename' => $handlename, 'title' => $title, 'comment' => $comment, 'pass_word'=> $pass_word);
+      $itemarray = array('handlename' => $handlename_, 'title' => $title_, 'comment' => $comment_, 'pass_word'=> $pass_word_);
       $view->msg = $dc->InputDataCheck($itemarray);
       if(strlen($view->msg) > 0)
       {//エラーあり
@@ -71,10 +76,10 @@
 
       //データチェックOK
       $view->pagetitle = $view->pagetitlearray['inputcheck'];
-      $view->handlename = $handlename;
-      $view->title = $title;
-      $view->comment = $comment;
-      $view->pass_word = $pass_word;
+      $view->handlename = $handlename_;
+      $view->title = $title_;
+      $view->comment = $comment_;
+      $view->pass_word = $pass_word_;
       $view->contents = $view->htmlCommentCheck();
       echo $view->htmlView();
       return;
@@ -83,7 +88,7 @@
     /*****************************/
     //  書込みボタンクリック
     /*****************************/
-    if(isset($_POST['insert']))
+    if(isset($_POST['btn_insert']))
     {
       switch ($_GET['type'])
       {
@@ -91,10 +96,10 @@
           /*****************************/
           //  追加
           /*****************************/
-          $db->title = $title;
-          $db->comment = $comment;
-          $db->handlename = $handlename;
-          $db->pass_word  = $pass_word;
+          $db->title = $title_;
+          $db->comment = $comment_;
+          $db->handlename = $handlename_;
+          $db->pass_word  = $pass_word_;
           
           $db->AddComment();
           
@@ -111,19 +116,19 @@
           /*****************************/
           //  返信追加
           /*****************************/
-          $view->board_id = $_GET['board_id'];
-          $db->board_id = $_GET['board_id'];
-
-          $db->title = $title;
-          $db->comment = $comment;
-          $db->handlename = $handlename;
-          $db->pass_word  = $pass_word;
+          $board_id_ = $_GET['board_id'];
+          
+          $db->board_id = $board_id_;
+          $db->title = $title_;
+          $db->comment = $comment_;
+          $db->handlename = $handlename_;
+          $db->pass_word  = $pass_word_;
           
           $db->AddCommentReturn();
           
           $view->pagetitle = $view->pagetitlearray['insert'];
           $view->msg = $view->msgarray['ok'];
-          $view->urlfile = sprintf($view->urlarray['grp_add'], $_GET['board_id']);
+          $view->urlfile = sprintf($view->urlarray['grp_add'], $board_id_);
           $view->button = $view->buttonarray[1];
           $view->contents = $view->htmlMessage();
           echo $view->htmlView();
@@ -134,21 +139,21 @@
           /*****************************/
           //  コメント更新
           /*****************************/
-          $comment_id = $_GET['comment_id'];
-          $view->board_id = $_GET['board_id'];
+          $comment_id_ = $_GET['comment_id'];
+          $board_id_ = $_GET['board_id'];
 
-          $db->title = $title;
-          $db->comment = $comment;
-          $db->handlename = $handlename;
-          $db->pass_word  = $pass_word;
-          $db->board_id  = $view->board_id;
-          $db->comment_id = $comment_id;
+          $db->title = $title_;
+          $db->comment = $comment_;
+          $db->handlename = $handlename_;
+          $db->pass_word  = $pass_word_;
+          $db->board_id  = $board_id_;
+          $db->comment_id = $comment_id_;
 
-          $db->EditComment($comment_id);
+          $db->EditComment($comment_id_);
 
           $view->pagetitle = $view->pagetitlearray['update'];
           $view->msg = $view->msgarray['ok'];
-          $view->urlfile = sprintf($view->urlarray['grp_add'], $_GET['board_id']);
+          $view->urlfile = sprintf($view->urlarray['grp_add'], $board_id_);
           $view->button = $view->buttonarray[1];
           $view->contents = $view->htmlMessage();
           echo $view->htmlView();

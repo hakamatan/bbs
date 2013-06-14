@@ -27,20 +27,17 @@
   /*****************************/
   //  管理者ＩＤ処理
   /*****************************/
-  $admin_id = null;
-  $admin_pass_word = null;
-  $comment_bk_color = null;
-  $comment_viewbk_color = null;
-  $free_bk_color = null;
-  $free_viewbk_color = null;
-
-  if(isset($_POST['add']) || isset($_POST['check']))
+  if(isset($_POST['btn_insert']) || isset($_POST['btn_check']))
   {
-    $admin_id = $_POST['admin_id'];
-    $admin_pass_word = $_POST['admin_pass_word'];
+    $admin_id_ = $_POST['admin_id'];
+    $admin_pass_word_ = $_POST['admin_pass_word'];
     
-    //データ入力チェック
-    $itemarray = array('admin_id' => $admin_id, 'admin_pass_word' => $admin_pass_word);
+    /*****************************/
+    //  データ入力チェック
+    /*****************************/
+    print printf("(データ入力チェック) admin_id_' => %s, 'admin_pass_word_' => %s <br>",$admin_id_, $admin_pass_word_);
+
+    $itemarray = array('admin_id' => $admin_id_, 'admin_pass_word' => $admin_pass_word_);
     $view->msg = $dc->InputDataCheck($itemarray);
     if(strlen($view->msg) > 0)
     {//エラーあり
@@ -53,9 +50,10 @@
     /*****************************/
     //  管理者ＩＤ新規登録
     /*****************************/
-    if(isset($_POST['add']))
-    {//新規登録チェック
-      $view->msg = $dc->AdminCheck($admin_id, $admin_pass_word);
+    if(isset($_POST['btn_insert']))
+    {
+      //新規登録チェック
+      $view->msg = $dc->AdminCheck($admin_id_, $admin_pass_word_);
       if(strlen($view->msg) > 0)
       {//エラーあり
         $view->pagetitle = $view->htmlSpanRed($view->pagetitlearray['error']);
@@ -65,26 +63,25 @@
       }
       
       //管理者テーブル追加
-      $db->admin_id = $admin_id;
-      $db->admin_pass_word = $admin_pass_word;
+      //print printf("(管理者ＩＤ新規登録) admin_id_' => %s, 'admin_pass_word_' => %s <br>",$admin_id_, $admin_pass_word_);
+      $db->admin_id = $admin_id_;
+      $db->admin_pass_word = $admin_pass_word_;
       
       $db->AddAdminInfo();
       
       //追加したデータ読込み
-      $db->admin_id = $admin_id;
-      $db->admin_pass_word = $admin_pass_word;
-      
-      $dt = $db->GetAdminInfo($admin_id);
+      $dt = $db->GetAdminInfo($admin_id_);
+      $comment_bk_color = '';
+      $comment_viewbk_color = '';
       foreach ($dt as $dr)
       {
-        //print $pass_word.','.$dr['pass_word'].';<br>';
         $comment_bk_color = $dr['comment_bk_color'];
         $comment_viewbk_color = $dr['comment_viewbk_color'];
       }
 
       //セッション変数定義
-      $_SESSION['admin_id'] = $admin_id;
-      $_SESSION['admin_pass_word'] = $admin_pass_word;
+      $_SESSION['admin_id'] = $admin_id_;
+      $_SESSION['admin_pass_word'] = $admin_pass_word_;
       $_SESSION['comment_bk_color'] = $comment_bk_color;
       $_SESSION['comment_viewbk_color'] = $comment_viewbk_color;
       
@@ -101,9 +98,9 @@
     /*****************************/
     //  管理者ＩＤ認証チェック
     /*****************************/
-    if(isset($_POST['check']))
+    if(isset($_POST['btn_check']))
     {//認証チェック
-      $view->msg = $dc->AdminCheck($admin_id, $admin_pass_word, 'check');
+      $view->msg = $dc->AdminCheck($admin_id_, $admin_pass_word_, 'check');
       if(strlen($view->msg) > 0)
       {//エラーあり
         $view->pagetitle = $view->htmlSpanRed($view->pagetitlearray['error']);
@@ -113,20 +110,19 @@
       }
 
       //管理者テーブル読込み
-      $db->admin_id = $admin_id;
-      $db->admin_pass_word = $admin_pass_word;
+      $db->admin_id = $admin_id_;
+      $db->admin_pass_word = $admin_pass_word_;
       
-      $dt = $db->GetAdminInfo($admin_id);
+      $dt = $db->GetAdminInfo($admin_id_);
       foreach ($dt as $dr)
       {
-        //print $pass_word.','.$dr['pass_word'].';<br>';
         $comment_bk_color = $dr['comment_bk_color'];
         $comment_viewbk_color = $dr['comment_viewbk_color'];
       }
 
       //セッション変数定義
-      $_SESSION['admin_id'] = $admin_id;
-      $_SESSION['admin_pass_word'] = $admin_pass_word;
+      $_SESSION['admin_id'] = $admin_id_;
+      $_SESSION['admin_pass_word'] = $admin_pass_word_;
       $_SESSION['comment_bk_color'] = $comment_bk_color;
       $_SESSION['comment_viewbk_color'] = $comment_viewbk_color;
     }
@@ -135,24 +131,15 @@
   /*****************************/
   //  管理者設定更新
   /*****************************/
-  if(isset($_POST['setting']))
+  if(isset($_POST['btn_setting']))
   {//カラー設定
-    /*print sprintf ("管理者設定更新 admin_id=%s, admin_pass_word=%s, comment_bk_color=%s, comment_viewbk_color=%s <br>",
-    $_SESSION['admin_id'],
-    $_SESSION['admin_pass_word'],
-    $_SESSION['comment_bk_color'],
-    $_SESSION['comment_viewbk_color']);
-    */
-    $comment_bk_color = $_POST['comcolor'];
-    $comment_viewbk_color = $_POST['viewcolor'];
-    $free_bk_color = $_POST['free_comcolor'];
-    $free_viewbk_color = $_POST['free_viewcolor'];
-    print sprintf ("更新ボタンcomment_bk_color->%s, comment_viewbk_color->%s <br>",
-    $_POST['comcolor'], $_POST['viewcolor'] 
-    );
+    $comment_bk_color_ = $_POST['comcolor'];
+    $comment_viewbk_color_ = $_POST['viewcolor'];
+    $free_bk_color_ = $_POST['free_comcolor'];
+    $free_viewbk_color_ = $_POST['free_viewcolor'];
     
-    $db->comment_bk_color = 0 < strlen($comment_bk_color) ? $comment_bk_color : $free_bk_color;
-    $db->comment_viewbk_color = 0 < strlen($comment_viewbk_color) ? $comment_viewbk_color : $free_viewbk_color;
+    $db->comment_bk_color = 0 < strlen($comment_bk_color_) ? $comment_bk_color_ : $free_bk_color_;
+    $db->comment_viewbk_color = 0 < strlen($comment_viewbk_color_) ? $comment_viewbk_color_ : $free_viewbk_color_;
     $db->EditAdminInfo($_SESSION['admin_id']);
 
     //セッション変数定義

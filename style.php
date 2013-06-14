@@ -1,7 +1,8 @@
 <?php 
   header('Content-Type: text/css; charset=utf-8');
 
-  //セッション開始
+  //セッション
+  session_cache_limiter('private, must-revalidate');
   session_start();
 
   if(isset($_SESSION['admin_id']) && isset($_SESSION['admin_pass_word']))
@@ -55,6 +56,12 @@ body {
 #pagetitle {
   background-color        : #ffffd9;
   border-bottom     : 1px solid #cccccc;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+#pageinfo {
+  background-color        : #ffffd9;
   padding-top: 5px;
   padding-bottom: 5px;
 }
@@ -208,14 +215,14 @@ body {
 }
 
 .button0{
-  width:110px;
+  width:120px;
   /*margin-right:auto;*/
-  margin-left:490px; 
+  margin-left:480px; 
 }
 .button1{
-  width:110px;
+  width:120px;
   /*margin-right:auto;*/
-  margin-left:390px;  
+  margin-left:380px;  
 }
 .btn1{
   float:left;

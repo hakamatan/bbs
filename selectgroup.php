@@ -15,9 +15,8 @@
   /*****************************/
   //  編集・削除ボタンクリック
   /*****************************/
-  if(isset($_POST['update']) || isset($_POST['delete']))
+  if(isset($_POST['btn_update']) || isset($_POST['btn_delete']))
   {
-    $view->board_id = $_GET['board_id'];
     $view->pagetitle = $view->pagetitlearray['keycheck'];
     $view->contents = $view->htmlKeyCheck();
     echo $view->htmlView();
@@ -28,17 +27,21 @@
   //  確認ボタンクリック
   /*****************************/
   $db = new DBClass();
-  $updelkey = '';
+  $updelkey_ = '';
 
-  if(isset($_POST['keycheck']))
+  if(isset($_POST['btn_keycheck']))
   {
-    $updelkey = $_GET['comment_id'];
+    $comment_id_ = $_GET['comment_id'];
+    $updelkey_ = $comment_id_;
+    $pass_word_ = $_POST['pass_word'];
+    $board_id_ = $_GET['board_id'];
+    $line_ = $_GET['cnt'];
 
     /*****************************/
     //  更新・削除キーチェック
     /*****************************/
     $dc = new DataCheckClass();
-    $view->msg = $dc->Pass_WordCheck($_POST['pass_word'], $_GET['comment_id']);
+    $view->msg = $dc->Pass_WordCheck($pass_word_, $comment_id_);
     if(strlen($view->msg) > 0)
     {//エラー
       $view->pagetitle = $view->htmlSpanRed($view->pagetitlearray['error']);
@@ -54,12 +57,12 @@
     {
       $view->pagetitle = $view->pagetitlearray['delete'];
       $view->msg = '本当に削除していいですか？';
-      $urlyes = sprintf($view->urlarray['del'], $_GET['board_id'], $_GET['comment_id'],$_GET['cnt']);
-      $urlno = sprintf($view->urlarray['grp_add'], $_GET['board_id']);
+      $urlyes = sprintf($view->urlarray['del'], $board_id_, $comment_id_,$line_);
+      $urlno = sprintf($view->urlarray['grp_add'], $board_id_);
       print '$urlyes->'.$urlyes.';$urlno->'.$urlno.'<br>';
       $view->urlfile = array($urlyes, $urlno);
       $view->button = $view->buttonarray[2];
-      $view->button_name = array('delete','cancel');
+      $view->button_name = array('btn_delete','btn_cancel');
       $view->contents = $view->htmlMessage();
       echo $view->htmlView();
       return;
@@ -74,7 +77,8 @@
   $subbody = '';
   $cnt = 1;
 
-  $dt = $db->GetGroupView($_GET['board_id']);
+  $board_id_ = $_GET['board_id'];
+  $dt = $db->GetGroupView($board_id_);
   foreach ($dt as $dr)
   {
     $view->comment_id = $dr['comment_id'];
@@ -83,7 +87,7 @@
     $view->comment = $dr['comment'];
     $view->up_date = $dr['up_date'];
     $view->cnt = $cnt;
-    $view->urlfile = sprintf($view->urlarray['grp_edit'], $_GET['board_id'], $dr['comment_id'], $cnt);
+    $view->urlfile = sprintf($view->urlarray['grp_edit'], $board_id_, $dr['comment_id'], $cnt);
     if(2 > $cnt)
     {//1件目
       $retitle = 'Re:'.$view->title;
@@ -93,7 +97,7 @@
     {
       $subbody .= $view->htmlSubGroupView();
     }
-    if($updelkey == $view->comment_id)
+    if($updelkey_ == $view->comment_id)
     {
       $up_comment_id = $dr['comment_id'];
       $up_board_id = $dr['board_id'];
@@ -112,7 +116,7 @@
   $keycheck = '&board_id='.$view->board_id;
   $url = '';
 
-  if(isset($_POST['keycheck']))
+  if(isset($_POST['btn_keycheck']))
   {//更新
     $view->comment_id = $up_comment_id;
     $view->board_id = $up_board_id;
@@ -120,14 +124,14 @@
     $view->title = $up_title;
     $view->handlename = $up_handlename;
     $view->pass_word = $up_pass_word;
-    $url = sprintf($view->urlarray['edit'], $_GET['board_id'], $_GET['comment_id']);
+    $url = sprintf($view->urlarray['edit'], $board_id_, $comment_id_);
   }
   else
   {//返信新規
-    $url = sprintf($view->urlarray['returnadd'], $_GET['board_id']);
+    $url = sprintf($view->urlarray['returnadd'], $board_id_);
   }
   $view->urlfile = $url;
-  $contents .= (isset($_POST['keycheck']) ? $view->htmlCommentInput() : $view->htmlCommentNewInput($retitle));
+  $contents .= (isset($_POST['btn_keycheck']) ? $view->htmlCommentInput() : $view->htmlCommentNewInput($retitle));
 
   /*****************************/
   //  表示
