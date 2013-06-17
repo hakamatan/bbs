@@ -136,7 +136,7 @@
   /*****************************/
   //  表示
   /*****************************/
-  $view->pagetitle = $view->pagetitlearray['add'];
+  $view->pagetitle = $view->pagetitlearray['group'];
   $view->contents = $contents;
   echo $view->htmlView();
   return;

@@ -149,5 +149,30 @@ class DataCheckClass
     return $ret;
   }
 
+  /******************************/
+  //  表示スタートデータ行取得
+  /******************************/
+  function GetStartRow($page, $pagelimit)
+  {
+    return (1 == $page) ? 0 : (intval($page) - 1) * $pagelimit;
+  }
+  
+  /******************************/
+  //  表示エンドデータ行取得
+  /******************************/
+  function GetEndRow($page, $pagelimit, $allcount)
+  {
+    $ans = $page * $pagelimit;
+    return ($ans > $allcount) ? $allcount : $ans;
+  }
+  
+  /******************************/
+  //  表示全頁数取得
+  /******************************/
+  function GetAllPage($allcount, $pagelimit)
+  {
+    return ($allcount % $pagelimit > 0) ? floor($allcount / $pagelimit) + 1 : floor($allcount / $pagelimit);
+  }
+
 }
 ?>

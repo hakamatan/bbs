@@ -25,6 +25,7 @@ class DBClass
   public $comment_id;
   public $comment_bk_color;
   public $comment_viewbk_color;
+  public $limitpageline;
 
   private $sql = '';
   private $sql_param = '';
@@ -312,11 +313,11 @@ class DBClass
     try
     {
       $this->DBOpen();
-      $val = "comment_bk_color = :bk_color, comment_viewbk_color = :viewbk_color";
+      $val = "comment_bk_color = :bk_color, comment_viewbk_color = :viewbk_color, limitpageline = :limitpageline";
       $where = "admin_id = :admin_id";
 
       $this->sql = $this->GetUpdateSql("user", $val, $where);
-      $this->sql_param = array('admin_id'=>$admin_id, 'bk_color'=>$this->comment_bk_color, 'viewbk_color'=>$this->comment_viewbk_color);
+      $this->sql_param = array('admin_id'=>$admin_id, 'bk_color'=>$this->comment_bk_color, 'viewbk_color'=>$this->comment_viewbk_color, 'limitpageline'=>$this->limitpageline);
       $this->UpdateData();
 
       $this->DbClose();
@@ -379,33 +380,25 @@ class DBClass
   /******************************/
   //  タイトル一覧抽出
   /******************************/
-  function GetTitleView($strat = '')
+  function GetTitleView($startrow, $pagelimit)
   {
     try
     {
-      $valplus = "";
-      $whereplus = "";
-      if($strat == '')
-      {//全件数
-        $valplus .= ", count(*) as count";
-      }
-      else
-      {
-        $whereplus .= sprintf(" limit %d, %d", $strat, $this->pagelimit);
-      }
-
       $this->DBOpen();
-      $val = "b.title, b.id as board_id, c.name as handlename, b.created_at as add_date, c.created_at as up_date, c.title as subject";
-      $val .= $valplus;
+      $val = "SQL_CALC_FOUND_ROWS b.title, b.id as board_id, c.name as handlename, b.created_at as add_date, c.created_at as up_date, c.title as subject";
       $tbl = " board as b left join (select min( board_id ) as board_id, max(created_at) as created_at, name, title from comment group by board_id) as c on b.id = c.board_id";
-      $where = "order by b.id desc";
-      $where .= $whereplus;
+      $where = "order by c.created_at desc, b.id desc";
+      $where .= " limit ".$startrow.",".$pagelimit;
       $this->sql = $this->GetSelectSql($val, $tbl, $where);
-      print '(GetTitleView)'.$this->sql.';<br>';
+//      print '(GetTitleView)'.$this->sql.';<br>';
       $ret = $this->SelectData();
 
+      $this->sql = "select FOUND_ROWS() as count";
+//      print '(GetTitleViewNumber)'.$this->sql.';<br>';
+      $retall = $this->SelectData();
+
       $this->DbClose();
-      return $ret;
+      return array($ret, $retall);
   	}
   	catch (PDOException $e)
   	{//異常終了
@@ -463,13 +456,13 @@ class DBClass
   /******************************/
   //  キーワードコメント抽出
   /******************************/
-  function GetCommentView($word, $terms)
+  function GetCommentView($word, $terms, $startrow, $pagelimit)
   {
     try
     {
       $this->DBOpen();
 
-      $val = "id as comment_id, board_id, contents as comment, created_at as up_date, name as handlename, pass_word, title";
+      $val = "SQL_CALC_FOUND_ROWS id as comment_id, board_id, contents as comment, created_at as up_date, name as handlename, pass_word, title";
       $tbl = "comment";
 
       $cnt = count($word);
@@ -482,19 +475,26 @@ class DBClass
           $where .= ($terms == 'or') ? " or contents LIKE '%".$word[$i]."%'" : " and contents LIKE '%".$word[$i]."%'";
         }
       }
+      $where .= " limit ".$startrow.",".$pagelimit;
+
       $this->sql = $this->GetSelectSql($val, $tbl, $where);
-      print '(GetCommentView)'.$this->sql;
+      print '(GetCommentView=>)'.$this->sql.';<br>';
       $ret = $this->SelectData();
-      
+
+      $this->sql = "select FOUND_ROWS() as count";
+//      print '(GetTitleViewNumber)'.$this->sql.';<br>';
+      $retall = $this->SelectData();
+
       $this->DbClose();
-      return $ret;
+      return array($ret, $retall);
+
     }
     catch (PDOException $e)
   	{//異常終了
       $this->ErrException($e->getMessage());
     }
-
   }
+  
   /******************************/
   //  管理者情報抽出
   /******************************/
@@ -504,7 +504,7 @@ class DBClass
     {
       $this->DBOpen();
 
-      $val = "admin_id , admin_pass_word, comment_bk_color, comment_viewbk_color";
+      $val = "admin_id , admin_pass_word, comment_bk_color, comment_viewbk_color, limitpageline";
       $tbl = "user";
       $where = "where admin_id = '".$admin_id."'";
       $this->sql = $this->GetSelectSql($val, $tbl, $where);

@@ -35,7 +35,7 @@
     /*****************************/
     //  データ入力チェック
     /*****************************/
-    print printf("(データ入力チェック) admin_id_' => %s, 'admin_pass_word_' => %s <br>",$admin_id_, $admin_pass_word_);
+//    print printf("(データ入力チェック) admin_id_' => %s, 'admin_pass_word_' => %s <br>",$admin_id_, $admin_pass_word_);
 
     $itemarray = array('admin_id' => $admin_id_, 'admin_pass_word' => $admin_pass_word_);
     $view->msg = $dc->InputDataCheck($itemarray);
@@ -73,10 +73,12 @@
       $dt = $db->GetAdminInfo($admin_id_);
       $comment_bk_color = '';
       $comment_viewbk_color = '';
+      $limitpageline = '';
       foreach ($dt as $dr)
       {
         $comment_bk_color = $dr['comment_bk_color'];
         $comment_viewbk_color = $dr['comment_viewbk_color'];
+        $limitpageline = $dr['limitpageline'];
       }
 
       //セッション変数定義
@@ -84,6 +86,7 @@
       $_SESSION['admin_pass_word'] = $admin_pass_word_;
       $_SESSION['comment_bk_color'] = $comment_bk_color;
       $_SESSION['comment_viewbk_color'] = $comment_viewbk_color;
+      $_SESSION['limitpageline'] = $limitpageline;
       
       $view->pagetitle = $view->pagetitlearray['insert'];
       $view->msg = $view->msgarray['ok'];
@@ -118,6 +121,7 @@
       {
         $comment_bk_color = $dr['comment_bk_color'];
         $comment_viewbk_color = $dr['comment_viewbk_color'];
+        $limitpageline = $dr['limitpageline'];
       }
 
       //セッション変数定義
@@ -125,6 +129,7 @@
       $_SESSION['admin_pass_word'] = $admin_pass_word_;
       $_SESSION['comment_bk_color'] = $comment_bk_color;
       $_SESSION['comment_viewbk_color'] = $comment_viewbk_color;
+      $_SESSION['limitpageline'] = $limitpageline;
     }
   }
 
@@ -137,14 +142,17 @@
     $comment_viewbk_color_ = $_POST['viewcolor'];
     $free_bk_color_ = $_POST['free_comcolor'];
     $free_viewbk_color_ = $_POST['free_viewcolor'];
+    $limitpageline_ = $_POST['limitpageline'];
     
     $db->comment_bk_color = 0 < strlen($comment_bk_color_) ? $comment_bk_color_ : $free_bk_color_;
     $db->comment_viewbk_color = 0 < strlen($comment_viewbk_color_) ? $comment_viewbk_color_ : $free_viewbk_color_;
+    $db->limitpageline = $limitpageline_;
     $db->EditAdminInfo($_SESSION['admin_id']);
 
     //セッション変数定義
     $_SESSION['comment_bk_color'] = $db->comment_bk_color;
     $_SESSION['comment_viewbk_color'] = $db->comment_viewbk_color;
+    $_SESSION['limitpageline'] = $db->limitpageline;
     
     $view->pagetitle = $view->pagetitlearray['update'];
     $view->msg = $view->msgarray['ok'];
@@ -174,6 +182,7 @@
   {//設定画面
     $view->admin_id = $_SESSION['admin_id'];
     $view->pagetitle = $view->pagetitlearray['adminsetting'];
+    $view->limitpageline = $_SESSION['limitpageline'];
     $view->contents = $view->htmlAdminSetting($_SESSION['comment_bk_color'], $_SESSION['comment_viewbk_color']);
     echo $view->htmlView();
     return;

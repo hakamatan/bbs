@@ -19,6 +19,7 @@ class ViewClass
         'adminlogin'=>'管理者ログイン',
         'adminsetting'=>'管理者設定',
         'keycheck'=>'更新・削除キーチェック',
+        'group'=>'グループ表示',
         'search'=>'検索結果'
         );
   
@@ -27,7 +28,8 @@ class ViewClass
   /****************************/
   public $urlarray = array(
         'home'=>'index.php',
-        'home_page'=>'index.php?page=%s',
+        'homepage'=>'index.php?page=%s',
+        'search'=>'search.php?word=%s&orand=%s&page=%s',
         'add'=>'dataupdate.php?type=1',
         'returnadd'=>'dataupdate.php?type=2&board_id=%s',
         'edit'=>'dataupdate.php?type=3&board_id=%s&comment_id=%s',
@@ -64,6 +66,7 @@ class ViewClass
   public $button_name;  //表示ボタン名
   public $alldata;      //全件数
   public $pageinfo;     //ページ情報
+  public $limitpageline;  //１頁表示件数
 
   /***************************/
   //  ページ
@@ -103,21 +106,15 @@ class ViewClass
   }
 
   /***************************/
-  //  ページ
+  //  表示ページ
   /***************************/
-  function htmlPageInfo($nowpage, $allpage)
+  function htmlPageInformation($nowpage, $startrow, $urlfile, $lastrow, $allpage)
   {
-    print '(htmlPageInfo=)'.$allpage.';<br>';
-    $info = sprintf('<td>%s 件ありました。現在 %s ページを表示しています  </td>', $this->alldata, $nowpage);
-    if(2 > $allpage)
-    {//1ページしかない
-      return '<form action="'.$this->urlfile.'" method="post"><table><tr>'.$info.'</tr></table></form>';
-    }
-    
-    $top = '<td><input type="submit" name="btn_top" value="  先頭へ  "></td>';
-    $next = '<td><input type="submit" name="btn_next" value="  次へ  "></td>';
-    $back = '<td><input type="submit" name="btn_back" value="  前へ  "></td>';
-    $bottom = '<td><input type="submit" name="btn_bottom" value="  最後へ  "></td>';
+    $info = sprintf('<td>%s 件ありました。現在 [%s - %s] 件を表示しています。 </td>', $this->alldata, $startrow, $lastrow);
+    $top = '<td><a href="'.sprintf($urlfile, 1).'">＜＜先頭へ</a></td>';
+    $back = '<td><a href="'.sprintf($urlfile, $nowpage-1).'">＜前へ&nbsp;</a></td>';
+    $next = '<td><a href="'.sprintf($urlfile, $nowpage+1).'">&nbsp;次へ＞</a></td>';
+    $bottom = '<td><a href="'.sprintf($urlfile, $allpage).'">最後へ＞＞</a></td>';
     switch ($nowpage)
     {
       case 1:
@@ -127,14 +124,11 @@ class ViewClass
         $info .= $top.$back;
         break;
       default:
-        $info .= $top.$next.$next.$bottom;
+        $info .= $top.$back.$next.$bottom;
         break;
     }
-    print '(htmlPageInfo.info=)'.$info.';<br>';
-    $ret = '<form action="'.$this->urlfile.'" method="post"><table><tr>'.$info.'</tr></table>';
-    $ret .= '</form>';
+    $ret = '<table><tr>'.$info.'</tr></table>';
     return $ret;
-//    $ret .= '<input type="hidden" name="nowpage" value="'.$nowpage.'">';
   }
 
   /***************************/
@@ -213,8 +207,12 @@ class ViewClass
   /****************************/
   //  ボタン種類
   /****************************/
-  public $buttonarray = array('', 'OK', 'YesNO');
-
+  public $buttonarray = array('', 'OK', 'YesNO',
+          'top'=>'btn_page_top',
+          'next'=>'btn_page_next',
+          'back'=>'btn_page_back',
+          'bottom'=>'btn_page_bottom',
+  );
   /***************************/
   //  メッセージ
   /***************************/
@@ -452,6 +450,7 @@ class ViewClass
           <input class="pass_word" type="text" name="free_comcolor" maxlength=7  size="8" value="'.$bk_color.'"></td></tr>
           <tr><th>掲示板一覧カラー</th><td>'.$this->htmlColorRadioButton($this->viewcolor_array, "viewcolor", $viewbk_color).'
           <input class="pass_word" type="text" name="free_viewcolor" maxlength=7  size="8" value="'.$viewbk_color.'"></td></tr>
+          <tr><th>１頁表示件数</th><td><input class="pass_word" type="text" name="limitpageline" maxlength=2  size="3" value="'.$this->limitpageline.'"></td></tr>
           </table><br>
           <input type="submit" name="btn_setting" value=" 設定  ">
                             <input type="reset" name="btn_reset" value="  もとに戻す  ">
@@ -507,14 +506,14 @@ class ViewClass
   /***************************/
   //  コメント検索
   /***************************/
-  function htmlWordSearch()
+  function htmlWordSearch($urlfile, $word)
   {
     return '
       <!--(6:キー検索 START)-->
           <div class="group10">
             <div id="comsearch">
-            <form action="index.php" method="post">
-            <b>ワード</b>　<input class="jpn" size="35" type="text" name="search_word">
+            <form action="'.$urlfile.'" method="post">
+            <b>ワード</b>　<input class="jpn" size="35" type="text" name="search_word" value="'.$word.'">
             <input type="radio" name="orand" value="or" checked>Or
             <input type="radio" name="orand" value="and">And
             <input type="submit" name="btn_search" value="  検索  ">
