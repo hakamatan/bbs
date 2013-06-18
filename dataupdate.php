@@ -25,7 +25,6 @@
     if(2 > $cnt_)
     {//1件目
       $db->DeleteBoard($board_id_);
-      $db->DeleteComment($comment_id_);
     }
     else
     {
@@ -33,7 +32,7 @@
     }
     $view->pagetitle = $view->pagetitlearray['delete'];
     $view->msg = $view->msgarray['ok'];
-    $view->urlfile = 2 > $cnt_ ? $view->urlarray['home'] : sprintf($view->urlarray['grp_add'], $board_id_);
+    $view->urlfile = 2 > $cnt_ ? $view->urlarray['home'] : sprintf($view->urlarray['grp_add'], $board_id_, 1);
     $view->button = $view->buttonarray[1];
     $view->contents = $view->htmlMessage();
     echo $view->htmlView();
@@ -128,7 +127,7 @@
           
           $view->pagetitle = $view->pagetitlearray['insert'];
           $view->msg = $view->msgarray['ok'];
-          $view->urlfile = sprintf($view->urlarray['grp_add'], $board_id_);
+          $view->urlfile = sprintf($view->urlarray['grp_add'], $board_id_, 1);
           $view->button = $view->buttonarray[1];
           $view->contents = $view->htmlMessage();
           echo $view->htmlView();
@@ -153,7 +152,7 @@
 
           $view->pagetitle = $view->pagetitlearray['update'];
           $view->msg = $view->msgarray['ok'];
-          $view->urlfile = sprintf($view->urlarray['grp_add'], $board_id_);
+          $view->urlfile = sprintf($view->urlarray['grp_add'], $board_id_, 1);
           $view->button = $view->buttonarray[1];
           $view->contents = $view->htmlMessage();
           echo $view->htmlView();

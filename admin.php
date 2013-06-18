@@ -183,7 +183,9 @@
     $view->admin_id = $_SESSION['admin_id'];
     $view->pagetitle = $view->pagetitlearray['adminsetting'];
     $view->limitpageline = $_SESSION['limitpageline'];
-    $view->contents = $view->htmlAdminSetting($_SESSION['comment_bk_color'], $_SESSION['comment_viewbk_color']);
+    $view->comment_bk_color = $_SESSION['comment_bk_color'];
+    $view->comment_viewbk_color = $_SESSION['comment_viewbk_color'];
+    $view->contents = $view->htmlAdminSetting();
     echo $view->htmlView();
     return;
   }

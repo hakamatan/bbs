@@ -33,9 +33,9 @@ class ViewClass
         'add'=>'dataupdate.php?type=1',
         'returnadd'=>'dataupdate.php?type=2&board_id=%s',
         'edit'=>'dataupdate.php?type=3&board_id=%s&comment_id=%s',
-        'del'=>'dataupdate.php?board_id=%s&comment_id=%s,&cnt=%s',
-        'grp_add'=>'selectgroup.php?board_id=%s',
-        'grp_edit'=>'selectgroup.php?board_id=%s&comment_id=%s&cnt=%s',
+        'del'=>'dataupdate.php?board_id=%s&comment_id=%s&cnt=%s',
+        'grp_add'=>'selectgroup.php?board_id=%s&page=%s',
+        'grp_edit'=>'selectgroup.php?board_id=%s&comment_id=%s&cnt=%s&page=%s',
         'admin'=>'admin.php');
 
   /****************************/
@@ -67,9 +67,24 @@ class ViewClass
   public $alldata;      //全件数
   public $pageinfo;     //ページ情報
   public $limitpageline;  //１頁表示件数
+  public $search_word;  //検索ワード
+  public $comment_bk_color;     //コメント背景カラー
+  public $comment_viewbk_color; //コメント一覧背景カラー
+  public $dt;           //読込みデータ
+
+  /***************************/
+  //  コンストラクタ
+  /***************************/
+  function __construct()
+  {
+  }
 
   /***************************/
   //  ページ
+  //
+  //  $this->pagetitle:ページタイトル
+  //  $this->contents :ページコンテンツ
+  //  $this->pageinfo :ページ情報
   /***************************/
   function htmlView()
   {
@@ -82,26 +97,26 @@ class ViewClass
       <link href="style.php" rel="stylesheet" type="text/css" />
     	<title>掲示板入門編</title>
     </head>';
-    $ret .= '
+    $ret .= "
     <body>
     <center>
-    <div id="maincontents">
+    <div id='maincontents'>
       <br>
-      <div id="maintitle"><h3>■　掲示板　■</h3></div>
-      <div id="homelnk"><ul><li><a href="./">HOME</a></li>&nbsp;|&nbsp;<li><a href="admin.php">管理者画面</a></li></ul></div>
-      <div id="pagetitle">'.$this->pagetitle.'</div>
+      <div id='maintitle'><h3>■　掲示板　■</h3></div>
+      <div id='homelnk'><ul><li><a href='./'>HOME</a></li>&nbsp;|&nbsp;<li><a href='admin.php'>管理者画面</a></li></ul></div>
+      <div id='pagetitle'>{$this->pagetitle}</div>
       <!--コンテンツ START -->
-      <div id="contents">';
-    $ret .= $this->contents;
-    $ret .= '
+      <div id='contents'>";
+    $ret .= "{$this->contents}";
+    $ret .= "
       </div>
       <!--コンテンツ END -->
       <br>
-      <div id="pageinfo">'.$this->pageinfo.'</div>
+      <div id='pageinfo'>{$this->pageinfo}</div>
     </div>
     </center>
     </body>
-    </html>';
+    </html>";
     return $ret;
   }
 
@@ -110,7 +125,15 @@ class ViewClass
   /***************************/
   function htmlPageInformation($nowpage, $startrow, $urlfile, $lastrow, $allpage)
   {
-    $info = sprintf('<td>%s 件ありました。現在 [%s - %s] 件を表示しています。 </td>', $this->alldata, $startrow, $lastrow);
+    if(0 < $this->alldata)
+    {
+      $info = sprintf('<td>%s 件ありました。現在 [%s - %s] 件を表示しています。 </td>', $this->alldata, $startrow, $lastrow);
+    }
+    else
+    {
+      return '<table><tr><td>該当するデータはありません。</td></tr></table>';
+    }
+
     $top = '<td><a href="'.sprintf($urlfile, 1).'">＜＜先頭へ</a></td>';
     $back = '<td><a href="'.sprintf($urlfile, $nowpage-1).'">＜前へ&nbsp;</a></td>';
     $next = '<td><a href="'.sprintf($urlfile, $nowpage+1).'">&nbsp;次へ＞</a></td>';
@@ -118,7 +141,8 @@ class ViewClass
     switch ($nowpage)
     {
       case 1:
-        $info .= $next.$bottom;
+        $info .= (1 == $allpage) ? '' : $next.$bottom;
+        //$info .= $next.$bottom;
         break;
       case $allpage:
         $info .= $top.$back;
@@ -133,31 +157,30 @@ class ViewClass
 
   /***************************/
   //  タイトル一覧
+  //
+  //  $this->dt:一覧データ
   /***************************/
-  function htmlTitleView($TitleViewBody)
+  function htmlTitleView()
   {
     $ret = '
     <!--(2:タイトル一覧 START)-->
         <div class="group2">
           <table id="titlegrp" cellspacing="1px">
           <tr><th>タイトル</th><th>投稿者</th><th>作成日</th><th>最終更新日</th></tr>';
-    $ret .= $TitleViewBody;
+    foreach ($this->dt as $dr)
+    {
+      $title = $dr['title'] != $dr['subject'] ? $dr['subject'] : $dr['title'];
+      $up_date = $dr['add_date'] != $dr['up_date'] ? $dr['up_date'] : '0000-00-00 00:00:00';
+      $urlfile = sprintf($this->urlarray['grp_add'], $dr['board_id'], 1);
+      $ret .= "
+          <tr><td class='left'><a href='{$urlfile}'>{$title}</a></td><td class='left'>{$dr['handlename']}
+          </td><td>{$dr['add_date']}</td><td>{$up_date}</td></tr>";
+    }
     $ret .= '
           </table>
         </div>
     <!--(2:タイトル一覧 END)-->';
     return $ret;
-  }
-
-  /***************************/
-  //  タイトル一覧本体
-  /***************************/
-  function htmlTitleViewBody()
-  {
-    $urlfile = sprintf($this->urlarray['grp_add'], $this->board_id);
-    return '
-          <tr><td class="left"><a href="'.$urlfile.'">'.$this->title.'</a></td><td class="left">'.$this->handlename.
-          '</td><td>'.$this->add_date.'</td><td>'.$this->up_date.'</td></tr>';
   }
 
   /***************************/
@@ -300,7 +323,7 @@ class ViewClass
   /***************************/
   function htmlCommentSearch()
   {
-    $urlfile = sprintf($this->urlarray['grp_add'], $this->board_id);
+    $urlfile = sprintf($this->urlarray['grp_add'], $this->board_id, 1);
     return '
         <a href="'.$urlfile.'">グループを表示する</a>';
   }
@@ -388,7 +411,7 @@ class ViewClass
   }
 
   /***************************/
-  //  更新・削除キー確認
+  //  更新・削除キー確認画面
   /***************************/
   function htmlKeyCheck()
   {
@@ -408,7 +431,7 @@ class ViewClass
   }
 
   /***************************/
-  //  管理者画面
+  //  管理者パスワードチェック画面
   /***************************/
   function htmlAdminCheck()
   {
@@ -431,10 +454,14 @@ class ViewClass
 
   /***************************/
   //  管理者画面
+  //
+  //  $this->comment_bk_color     :コメント背景カラー
+  //  $this->comment_viewbk_color :コメント一覧背景カラー
+  //  $this->limitpageline        :１頁表示件数
   /***************************/
-  function htmlAdminSetting($bk_color, $viewbk_color)
+  function htmlAdminSetting()
   {
-    return '
+    $ret = '
     <!--(8:管理画面 色 START)-->
         <div class="group0">
           <div id="adminlogout"><br>
@@ -444,20 +471,23 @@ class ViewClass
           </form>
           </div><br>
           <div id="adminsetting">
-          <form action="" method="post">
-          <table>
-          <tr><th>掲示板背景カラー</th><td>'.$this->htmlColorRadioButton($this->comcolorarray, "comcolor", $bk_color).'
-          <input class="pass_word" type="text" name="free_comcolor" maxlength=7  size="8" value="'.$bk_color.'"></td></tr>
-          <tr><th>掲示板一覧カラー</th><td>'.$this->htmlColorRadioButton($this->viewcolor_array, "viewcolor", $viewbk_color).'
-          <input class="pass_word" type="text" name="free_viewcolor" maxlength=7  size="8" value="'.$viewbk_color.'"></td></tr>
-          <tr><th>１頁表示件数</th><td><input class="pass_word" type="text" name="limitpageline" maxlength=2  size="3" value="'.$this->limitpageline.'"></td></tr>
+          <form action="" method="post">';
+    $ret .= 
+          "<table>
+          <tr><th>掲示板背景カラー</th><td>{$this->htmlColorRadioButton($this->comcolorarray, 'comcolor', $this->comment_bk_color)}
+          <input class='pass_word' type='text' name='free_comcolor' maxlength=7  size='8' value='{$this->comment_bk_color}'></td></tr>
+          <tr><th>掲示板一覧カラー</th><td>{$this->htmlColorRadioButton($this->viewcolor_array, 'viewcolor', $this->comment_viewbk_color)}
+          <input class='pass_word' type='text' name='free_viewcolor' maxlength=7  size='8' value='{$this->comment_viewbk_color}'></td></tr>
+          <tr><th>１頁表示件数</th><td><input class='pass_word' type='text' name='limitpageline' maxlength=2  size='3' value='{$this->limitpageline}'></td></tr>
           </table><br>
-          <input type="submit" name="btn_setting" value=" 設定  ">
-                            <input type="reset" name="btn_reset" value="  もとに戻す  ">
+          <input type='submit' name='btn_setting' value=' 設定  '>
+                            <input type='reset' name='btn_reset' value='  もとに戻す  '>";
+    $ret .= '
           </form>
           </div>
         </div>
     <!--(8:管理画面 色 END)-->';
+    return $ret;
   }
 
   /***************************/
@@ -498,29 +528,33 @@ class ViewClass
     foreach($radio_array as $key => $val)
     {
       $checked = ($key == $data || $flg != '') ? " checked='checked'" : "";
-      $ret .= "<input type='radio' name='{$name}' value='{$key}'{$checked}><font color=\"".$key."\">".$val."</font>";
+      //$ret .= "<input type='radio' name='{$name}' value='{$key}'{$checked}><font color=\"".$key."\">".$val."</font>";
+      $ret .= "<input type='radio' name='{$name}' value='{$key}'{$checked}><font color='{$key}'>{$val}</font>";
     }
     return $ret;
   }
 
   /***************************/
   //  コメント検索
+  //
+  //  $this->urlfile    :送信先プログラム
+  //  $this->search_word:検索ワード
   /***************************/
-  function htmlWordSearch($urlfile, $word)
+  function htmlWordSearch()
   {
-    return '
+    return "
       <!--(6:キー検索 START)-->
-          <div class="group10">
-            <div id="comsearch">
-            <form action="'.$urlfile.'" method="post">
-            <b>ワード</b>　<input class="jpn" size="35" type="text" name="search_word" value="'.$word.'">
-            <input type="radio" name="orand" value="or" checked>Or
-            <input type="radio" name="orand" value="and">And
-            <input type="submit" name="btn_search" value="  検索  ">
+          <div class='group10'>
+            <div id='comsearch'>
+            <form action='{$this->urlfile}' method='post'>
+            <b>ワード</b>　<input class='jpn' size='35' type='text' name='search_word' value='{$this->search_word}'>
+            <input type='radio' name='orand' value='or' checked>Or
+            <input type='radio' name='orand' value='and'>And
+            <input type='submit' name='btn_search' value='  検索  '>
             </form>
             </div>
           </div>
-      <!--(6:キー検索 END)-->';
+      <!--(6:キー検索 END)-->";
   }
 
 }

@@ -27,27 +27,29 @@
     $search_word_ = $_POST['search_word'];
     $page_ = 1;
   }
+
+  /*****************************/
+  //  ページリンク作成
+  /*****************************/
   $startrow = 0;  //表示開始レコード
   $allpage_ = 1;  //全ページ
   $allcount = 0;  //全件数
 
+  $pagelimit = isset($_SESSION['limitpageline']) ? $_SESSION['limitpageline'] : $db->pagelimit;
+  $startrow = $dc->GetStartRow($page_, $pagelimit);
+
   /*****************************/
   //  コメント検索入力部作成
   /*****************************/
-  $urlfile = sprintf($view->urlarray['search'], $search_word_, $orand_, $page_);
-  $contents .= $view->htmlWordSearch($urlfile, $search_word_);
+  $view->urlfile = sprintf($view->urlarray['search'], $search_word_, $orand_, $page_);
+  $view->search_word = $search_word_;
+  $contents .= $view->htmlWordSearch();
 
   /*****************************/
   //  コメント入力部作成
   /*****************************/
   $view->urlfile = $view->urlarray['add'];
   $contents .= $view->htmlCommentNewInput();
-
-  /*****************************/
-  //  ページリンク作成
-  /*****************************/
-  $pagelimit = isset($_SESSION['limitpageline']) ? $_SESSION['limitpageline'] : $db->pagelimit;
-  $startrow = $dc->GetStartRow($page_, $pagelimit);
 
   /*****************************/
   //  検索文字チェック
@@ -96,7 +98,7 @@
   //$lastrow = $dc->GetEndRow($page_, $pagelimit, $allcount);
   $urlfile = sprintf($view->urlarray['search'], $search_word_, $orand_, '%s');
   //print '=>'.$urlfile.';<br>';
-  $view->pageinfo = $view->htmlPageInformation($page_, $startrow, $urlfile, $dc->GetEndRow($page_, $pagelimit, $allcount), $allpage);
+  $view->pageinfo = $view->htmlPageInformation($page_, $startrow + 1, $urlfile, $dc->GetEndRow($page_, $pagelimit, $allcount), $allpage);
   $view->pagetitle = $view->pagetitlearray['search'];
   $view->contents = $contents;
   echo $view->htmlView();

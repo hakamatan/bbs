@@ -15,22 +15,22 @@
   $db = new DBClass();
   $dc = new DataCheckClass();
 
+  /*****************************/
+  //ページリンク作成
+  /*****************************/
   $page_ = isset($_GET['page']) ? $_GET['page'] : 1;
   $startrow = 0;  //表示開始レコード
   $allpage_ = 1;  //全ページ
   $allcount = 0;  //全件数
-  
-  /*****************************/
-  //ページリンク作成
-  /*****************************/
+
   $pagelimit = isset($_SESSION['limitpageline']) ? $_SESSION['limitpageline'] : $db->pagelimit;
   $startrow = $dc->GetStartRow($page_, $pagelimit);
 
   /*****************************/
   //  コメント検索入力部作成
   /*****************************/
-  $urlfile = sprintf($view->urlarray['search'],'','','');
-  $contents .= $view->htmlWordSearch($urlfile, '');
+  $view->urlfile = sprintf($view->urlarray['search'],'','','');
+  $contents .= $view->htmlWordSearch();
 
   /*****************************/
   //  コメント入力部作成
@@ -43,17 +43,8 @@
   /*****************************/
   //一覧取得
   $dt = $db->GetTitleView($startrow, $pagelimit);
-  $body = '';
-  foreach ($dt[0] as $dr)
-  {
-    $view->board_id = $dr['board_id'];
-    $view->title = $dr['title'] != $dr['subject'] ? $dr['subject'] : $dr['title'];
-    $view->handlename = $dr['handlename'];
-    $view->add_date = $dr['add_date'];
-    $view->up_date = $dr['add_date'] != $dr['up_date'] ? $dr['up_date'] : '0000-00-00 00:00:00';
-    $body .= $view->htmlTitleViewBody();
-  }
-  $contents .= $view->htmlTitleView($body);
+  $view->dt = $dt[0];
+  $contents .= $view->htmlTitleView();
 
   //  全件データ件数取得
   foreach ($dt[1] as $dr)

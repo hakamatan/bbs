@@ -6,11 +6,12 @@
   require_once('ViewClass.php');
   require_once('DataCheckClass.php');
 
+  //セッション
   session_cache_limiter('private, must-revalidate');
-  //セッション開始
   session_start();
   
   $view = new ViewClass();
+  $dc = new DataCheckClass();
 
   /*****************************/
   //  編集・削除ボタンクリック
@@ -40,7 +41,6 @@
     /*****************************/
     //  更新・削除キーチェック
     /*****************************/
-    $dc = new DataCheckClass();
     $view->msg = $dc->Pass_WordCheck($pass_word_, $comment_id_);
     if(strlen($view->msg) > 0)
     {//エラー
@@ -57,9 +57,9 @@
     {
       $view->pagetitle = $view->pagetitlearray['delete'];
       $view->msg = '本当に削除していいですか？';
-      $urlyes = sprintf($view->urlarray['del'], $board_id_, $comment_id_,$line_);
-      $urlno = sprintf($view->urlarray['grp_add'], $board_id_);
-      print '$urlyes->'.$urlyes.';$urlno->'.$urlno.'<br>';
+      $urlyes = sprintf($view->urlarray['del'], $board_id_, $comment_id_, $line_);
+      $urlno = sprintf($view->urlarray['grp_add'], $board_id_, 1);
+      //print '$urlyes->'.$urlyes.';$urlno->'.$urlno.'<br>';
       $view->urlfile = array($urlyes, $urlno);
       $view->button = $view->buttonarray[2];
       $view->button_name = array('btn_delete','btn_cancel');
@@ -70,75 +70,101 @@
   }
 
   /*****************************/
+  //ページリンク作成
+  /*****************************/
+  $page_ = isset($_GET['page']) ? $_GET['page'] : 1;
+  $startrow = 0;  //表示開始レコード
+  $allpage_ = 1;  //全ページ
+  $allcount = 0;  //全件数
+
+  $pagelimit = isset($_SESSION['limitpageline']) ? $_SESSION['limitpageline'] : $db->pagelimit;
+  $startrow = $dc->GetStartRow($page_, $pagelimit);
+
+  /*****************************/
   //  グループ一覧部作成
   /*****************************/
-  $contents = '';
-  $body = '';
-  $subbody = '';
-  $cnt = 1;
-
   $board_id_ = $_GET['board_id'];
-  $dt = $db->GetGroupView($board_id_);
-  foreach ($dt as $dr)
+  $starow = (1 == $page_) ? $startrow + 1 : $startrow;  //2件目以降の調整
+
+  $dt = $db->GetGroupView($board_id_, $starow, $pagelimit);
+
+  //  グループ一覧取得
+  list($retitle,$body,$updel_key) = SetGroupView($dt[2], 1, $updelkey_, $page_, $board_id_);  //1件目
+  list($dummy,$subbody,$updel_keysub) = SetGroupView($dt[0], 2, $updelkey_, $page_, $board_id_);  //2件目以降
+  $contents = $view->htmlGroupView($body, $subbody);
+
+  //  全件データ件数取得
+  foreach ($dt[1] as $dr)
   {
-    $view->comment_id = $dr['comment_id'];
-    $view->title = $dr['title'];
-    $view->handlename = $dr['handlename'];
-    $view->comment = $dr['comment'];
-    $view->up_date = $dr['up_date'];
-    $view->cnt = $cnt;
-    $view->urlfile = sprintf($view->urlarray['grp_edit'], $board_id_, $dr['comment_id'], $cnt);
-    if(2 > $cnt)
-    {//1件目
-      $retitle = 'Re:'.$view->title;
-      $body .= $view->htmlGroupViewFirst();
-    }
-    else
-    {
-      $subbody .= $view->htmlSubGroupView();
-    }
-    if($updelkey_ == $view->comment_id)
-    {
-      $up_comment_id = $dr['comment_id'];
-      $up_board_id = $dr['board_id'];
-      $up_comment = $dr['comment'];
-      $up_title = $dr['title'];
-      $up_handlename = $dr['handlename'];
-      $up_pass_word = $dr['pass_word'];
-    }
-    $cnt++;
- 	}
-  $contents .= $view->htmlGroupView($body, $subbody);
+    $allcount = $dr['count'];
+  }
+  $view->alldata = $allcount;
+  $allpage = $dc->GetAllPage($allcount, $pagelimit);
 
   /*****************************/
   //  コメント入力部作成
   /*****************************/
-  $keycheck = '&board_id='.$view->board_id;
-  $url = '';
-
   if(isset($_POST['btn_keycheck']))
   {//更新
-    $view->comment_id = $up_comment_id;
-    $view->board_id = $up_board_id;
-    $view->comment = $up_comment;
-    $view->title = $up_title;
-    $view->handlename = $up_handlename;
-    $view->pass_word = $up_pass_word;
-    $url = sprintf($view->urlarray['edit'], $board_id_, $comment_id_);
+    $key = ($updel_key != null) ? $updel_key : $updel_keysub;
+    $view->comment_id = $key['comment_id'];
+    $view->board_id = $key['board_id'];
+    $view->comment = $key['comment'];
+    $view->title = $key['title'];
+    $view->handlename = $key['handlename'];
+    $view->pass_word = $key['pass_word'];
+    $view->urlfile = sprintf($view->urlarray['edit'], $board_id_, $comment_id_);
+    $contents .= $view->htmlCommentInput();
   }
   else
   {//返信新規
-    $url = sprintf($view->urlarray['returnadd'], $board_id_);
+    $view->urlfile = sprintf($view->urlarray['returnadd'], $board_id_);
+    $contents .= $view->htmlCommentNewInput($retitle);
   }
-  $view->urlfile = $url;
-  $contents .= (isset($_POST['btn_keycheck']) ? $view->htmlCommentInput() : $view->htmlCommentNewInput($retitle));
 
   /*****************************/
   //  表示
   /*****************************/
+  $urlfile = sprintf($view->urlarray['grp_add'], $board_id_, '%s');
+  $view->pageinfo = $view->htmlPageInformation($page_, $startrow + 1, $urlfile, $dc->GetEndRow($page_, $pagelimit, $allcount), $allpage);
   $view->pagetitle = $view->pagetitlearray['group'];
   $view->contents = $contents;
   echo $view->htmlView();
   return;
 
+  /*****************************/
+  //  一覧データ編集
+  /*****************************/
+  function SetGroupView($dt, $cnt, $updelkey, $page, $board_id)
+  {
+    $view = new ViewClass();
+    $retitle = '';
+    $body = '';
+    $key = null;
+    foreach ($dt as $dr)
+    {
+      $view->comment_id = $dr['comment_id'];
+      $view->title = $dr['title'];
+      $view->handlename = $dr['handlename'];
+      $view->comment = $dr['comment'];
+      $view->up_date = $dr['up_date'];
+      $view->cnt = $cnt;
+      $view->urlfile = sprintf($view->urlarray['grp_edit'], $board_id, $dr['comment_id'], $cnt, $page);
+      if(2 > $cnt)
+      {//1件目
+        $retitle = 'Re:'.$view->title;
+        $body .= $view->htmlGroupViewFirst();
+      }
+      else
+      {
+        $body .= $view->htmlSubGroupView();
+      }  
+      if($updelkey == $view->comment_id)
+      {
+        $key = array('comment_id'=>$dr['comment_id'], 'board_id'=>$dr['board_id'], 'comment'=>$dr['comment'], 'title'=>$dr['title'], 'handlename'=>$dr['handlename'], 'pass_word'=> $dr['pass_word']);
+      }
+      $cnt++;
+    }
+    return array($retitle, $body, $key);
+  }
 ?>

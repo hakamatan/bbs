@@ -106,9 +106,9 @@ body {
 }
 .group1 {
   word-wrap:break-word;
-  width:500px;
+  width:590px;
   margin-right:auto;
-  margin-left:100px;  
+  margin-left:10px;  
   background-color:#FFD700;
   padding-top:5px;
   padding-bottom:5px;
@@ -217,12 +217,12 @@ body {
 .button0{
   width:120px;
   /*margin-right:auto;*/
-  margin-left:480px; 
+  margin-left:470px; 
 }
 .button1{
   width:120px;
   /*margin-right:auto;*/
-  margin-left:380px;  
+  margin-left:460px;  
 }
 .btn1{
   float:left;
@@ -238,3 +238,6 @@ body {
   text-align:left;
 }
 
+#adminsetting th {
+  text-align:left;
+}

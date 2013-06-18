@@ -363,12 +363,12 @@ class DBClass
       $this->sql = $this->GetDeleteSql("board", "id = :board_id");
       $this->sql_param = array('board_id' => $board_id);
       $this->DeleteData();
-/*
+
       //コメント削除
       $this->sql = $this->GetDeleteSql("comment", "board_id = :board_id");
       $this->sql_param = array('board_id' => $board_id);
       $this->DeleteData();
-*/
+
       $this->DbClose();
   	}
   	catch (PDOException $e)
@@ -380,11 +380,21 @@ class DBClass
   /******************************/
   //  タイトル一覧抽出
   /******************************/
+  function GetAllDataCount()
+  {
+    $this->sql = "select FOUND_ROWS() as count";
+    return $this->SelectData();
+  }
+
+  /******************************/
+  //  タイトル一覧抽出
+  /******************************/
   function GetTitleView($startrow, $pagelimit)
   {
     try
     {
       $this->DBOpen();
+      
       $val = "SQL_CALC_FOUND_ROWS b.title, b.id as board_id, c.name as handlename, b.created_at as add_date, c.created_at as up_date, c.title as subject";
       $tbl = " board as b left join (select min( board_id ) as board_id, max(created_at) as created_at, name, title from comment group by board_id) as c on b.id = c.board_id";
       $where = "order by c.created_at desc, b.id desc";
@@ -393,9 +403,10 @@ class DBClass
 //      print '(GetTitleView)'.$this->sql.';<br>';
       $ret = $this->SelectData();
 
-      $this->sql = "select FOUND_ROWS() as count";
-//      print '(GetTitleViewNumber)'.$this->sql.';<br>';
-      $retall = $this->SelectData();
+//      $this->sql = "select FOUND_ROWS() as count";
+////      print '(GetTitleViewNumber)'.$this->sql.';<br>';
+//      $retall = $this->SelectData();
+      $retall = $this->GetAllDataCount();
 
       $this->DbClose();
       return array($ret, $retall);
@@ -409,19 +420,35 @@ class DBClass
   /******************************/
   //  グループ一覧抽出
   /******************************/
-  function GetGroupView($board_id)
+  function GetGroupView($board_id, $startrow, $pagelimit)
   {
     try
     {
       $this->DBOpen();
-      $val = "c.id as comment_id, c.title as title, c.name as handlename, c.created_at as up_date, c.contents as comment, b.created_at as add_date, c.board_id, c.pass_word";
+      
+      //親抽出
+      $val = "c.id as comment_id, c.title as title, c.name as handlename, c.created_at as up_date, c.contents as comment, b.created_at as add_date, c.board_id, c.pass_word, min(c.id) as minid";
       $tbl = "comment as c join board as b on c.board_id = b.id";
       $where = "where c.board_id = ".$board_id." order by c.id";
       $this->sql = $this->GetSelectSql($val, $tbl, $where);
+      //print 'GetGroupView=>first=>'.$this->sql.';<br>';
+      $retfirst = $this->SelectData();
+      
+      //子データ抽出
+      $val = "SQL_CALC_FOUND_ROWS c.id as comment_id, c.title as title, c.name as handlename, c.created_at as up_date, c.contents as comment, b.created_at as add_date, c.board_id, c.pass_word";
+      $tbl = "comment as c join board as b on c.board_id = b.id";
+      $where = "where c.board_id = ".$board_id." order by c.id";
+      $where .= " limit ".$startrow.",".$pagelimit;
+      $this->sql = $this->GetSelectSql($val, $tbl, $where);
+      //print 'GetGroupView=>'.$this->sql.';<br>';
       $ret = $this->SelectData();
 
+      //件数
+      $retall = $this->GetAllDataCount();
+
       $this->DbClose();
-      return $ret;
+//      return $ret;
+      return array($ret, $retall, $retfirst);
   	}
   	catch (PDOException $e)
   	{//異常終了
@@ -478,12 +505,13 @@ class DBClass
       $where .= " limit ".$startrow.",".$pagelimit;
 
       $this->sql = $this->GetSelectSql($val, $tbl, $where);
-      print '(GetCommentView=>)'.$this->sql.';<br>';
+      //print '(GetCommentView=>)'.$this->sql.';<br>';
       $ret = $this->SelectData();
 
-      $this->sql = "select FOUND_ROWS() as count";
-//      print '(GetTitleViewNumber)'.$this->sql.';<br>';
-      $retall = $this->SelectData();
+//      $this->sql = "select FOUND_ROWS() as count";
+////      print '(GetTitleViewNumber)'.$this->sql.';<br>';
+//      $retall = $this->SelectData();
+      $retall = $this->GetAllDataCount();
 
       $this->DbClose();
       return array($ret, $retall);
