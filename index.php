@@ -6,14 +6,13 @@
   require_once('ViewClass.php');
   require_once('DataCheckClass.php');
 
-  //セッション
-  session_cache_limiter('private, must-revalidate');
-  session_start();
-
   $contents = '';
   $view = new ViewClass();
   $db = new DBClass();
   $dc = new DataCheckClass();
+
+  //セッション
+  $dc->SessionStart();
 
   /*****************************/
   //ページリンク作成
@@ -23,7 +22,7 @@
   $allpage_ = 1;  //全ページ
   $allcount = 0;  //全件数
 
-  $pagelimit = isset($_SESSION['limitpageline']) ? $_SESSION['limitpageline'] : $db->pagelimit;
+  $pagelimit = $dc->GetPageLimit();
   $startrow = $dc->GetStartRow($page_, $pagelimit);
 
   /*****************************/
@@ -52,12 +51,17 @@
     $allcount = $dr['count'];
   }
   $view->alldata = $allcount;
-  $allpage = $dc->GetAllPage($allcount, $pagelimit);
 
   /*****************************/
   //  表示
   /*****************************/
-  $view->pageinfo = $view->htmlPageInformation($page_, $startrow + 1, $view->urlarray['homepage'], $dc->GetEndRow($page_, $pagelimit, $allcount), $allpage);
+  $view->urlfile = $view->urlarray['homepage'];
+  $view->startrow = $startrow + 1;
+  $view->page = $page_;
+  $view->lastrow = $dc->GetEndRow($page_, $pagelimit, $allcount);
+  $view->allpage = $dc->GetAllPage($allcount, $pagelimit);
+  $view->pageinfo = $view->htmlPageInformation();
+  
   $view->pagetitle = $view->pagetitlearray['add'];
   $view->contents = $contents;
   echo $view->htmlView();

@@ -6,14 +6,13 @@
   require_once('ViewClass.php');
   require_once('DataCheckClass.php');
 
-  //セッション
-  session_cache_limiter('private, must-revalidate');
-  session_start();
-
   $contents = '';
   $view = new ViewClass();
   $db = new DBClass();
   $dc = new DataCheckClass();
+
+  //セッション
+  $dc->SessionStart();
 
   if($_SERVER["REQUEST_METHOD"] != "POST")
   {
@@ -35,7 +34,7 @@
   $allpage_ = 1;  //全ページ
   $allcount = 0;  //全件数
 
-  $pagelimit = isset($_SESSION['limitpageline']) ? $_SESSION['limitpageline'] : $db->pagelimit;
+  $pagelimit = $dc->GetPagelimit();
   $startrow = $dc->GetStartRow($page_, $pagelimit);
 
   /*****************************/
@@ -71,18 +70,9 @@
   /*****************************/
   //結果一覧取得
   $dt = $db->GetCommentView($word, $orand_, $startrow, $pagelimit);
-  $body = '';
-  foreach ($dt[0] as $dr)
-  {
-    $view->board_id = $dr['board_id'];
-    $view->comment_id = $dr['comment_id'];
-    $view->title = $dr['title'];
-    $view->handlename = $dr['handlename'];
-    $view->comment = $dr['comment'];
-    $view->up_date = $dr['up_date'];
-    $body .= $view->htmlGroupView($view->htmlGroupViewFirst('search'), '');
-  }
-  $contents .= $body;
+  $view->dt = array($dt[0], null);
+  $view->cnt = array(1, 2);
+  $contents .= $view->htmlGroupView('search');
 
   //  全件データ件数取得
   foreach ($dt[1] as $dr)
@@ -90,15 +80,17 @@
     $allcount = $dr['count'];
  	}
   $view->alldata = $allcount;
-  $allpage = $dc->GetAllPage($allcount, $pagelimit);
 
   /*****************************/
   //  表示
   /*****************************/
-  //$lastrow = $dc->GetEndRow($page_, $pagelimit, $allcount);
-  $urlfile = sprintf($view->urlarray['search'], $search_word_, $orand_, '%s');
-  //print '=>'.$urlfile.';<br>';
-  $view->pageinfo = $view->htmlPageInformation($page_, $startrow + 1, $urlfile, $dc->GetEndRow($page_, $pagelimit, $allcount), $allpage);
+  $view->urlfile = sprintf($view->urlarray['search'], $search_word_, $orand_, '%s');
+  $view->page = $page_;
+  $view->startrow = $startrow + 1;
+  $view->lastrow = $dc->GetEndRow($page_, $pagelimit, $allcount);
+  $view->allpage = $dc->GetAllPage($allcount, $pagelimit);
+  $view->pageinfo = $view->htmlPageInformation();
+
   $view->pagetitle = $view->pagetitlearray['search'];
   $view->contents = $contents;
   echo $view->htmlView();

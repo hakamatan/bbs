@@ -5,6 +5,23 @@
   session_cache_limiter('private, must-revalidate');
   session_start();
 
+/*  require_once('DataCheckClass.php');
+
+  $dc = new DataCheckClass();
+  //セッション
+  $dc->SessionStart();
+
+  $ret = $dc->GetColor();
+  if($ret != null)
+  {
+    list($bk_color, $viewbk_color) = $ret;
+  }
+  else
+  {
+     $bk_color = '#BDB76B';
+     $viewbk_color = '#FFDEAD';
+  }
+  */
   if(isset($_SESSION['admin_id']) && isset($_SESSION['admin_pass_word']))
   {
      $bk_color = $_SESSION['comment_bk_color'];
@@ -16,6 +33,7 @@
      $viewbk_color = '#FFDEAD';
   }
 ?>
+
 
 * {
   padding:0px;

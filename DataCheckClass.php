@@ -174,5 +174,104 @@ class DataCheckClass
     return ($allcount % $pagelimit > 0) ? floor($allcount / $pagelimit) + 1 : floor($allcount / $pagelimit);
   }
 
+  /*****************************/
+  //  セッションスタート
+  /*****************************/
+  function SessionStart()
+  {
+    //セッション
+    session_cache_limiter('private, must-revalidate');
+    session_start();
+  }
+
+  /*****************************/
+  //  セッション破棄
+  /*****************************/
+  function SessionDestroy()
+  {
+    $_SESSION = array();
+    session_destroy();
+  }
+
+  /*****************************/
+  //  ログインチェック
+  /*****************************/
+  function CheckLogin()
+  {
+    if(isset($_SESSION['admin_id']) && isset($_SESSION['admin_pass_word']))
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }
+  }
+
+  /*****************************/
+  //  １頁表示件数取得
+  /*****************************/
+  function GetPageLimit()
+  {
+    $db = new DBClass();
+    return $this->CheckLogin() ? $_SESSION['limitpageline'] : $db->pagelimit;
+  }
+
+  /*****************************/
+  //  カラー取得
+  /*****************************/
+  function GetColor()
+  {
+/*    if($this->CheckLogin())
+    {
+      $ret = array($_SESSION['comment_bk_color'], $_SESSION['comment_viewbk_color']);
+    } 
+    else
+    {
+      $ret  = null;
+    }*/
+    $ret = $this->CheckLogin() ? array($_SESSION['comment_bk_color'], $_SESSION['comment_viewbk_color']) : null;
+    return $ret;
+ }
+
+  /*****************************/
+  //  セットセッション
+  /*****************************/
+  function SetSession($item)
+  {
+    foreach ($item as $key => $value)
+    {
+      switch ($key)
+      {
+        case 'admin_id':
+          $_SESSION['admin_id'] = $value;
+          break;
+        case 'admin_pass_word':
+          $_SESSION['admin_pass_word'] = $value;
+          break;
+        case 'limitpageline';
+          $_SESSION['limitpageline'] = $value;
+          break;
+        case 'comment_bk_color';
+          $_SESSION['comment_bk_color'] = $value;
+          break;
+        case 'comment_viewbk_color';
+          $_SESSION['comment_viewbk_color'] = $value;
+          break;
+
+        default:
+          break;
+      }
+    }
+  }
+
+  /*****************************/
+  //  セッション取得
+  /*****************************/
+  function GetSession()
+  {
+    $data =  array('admin_id'=>$_SESSION['admin_id'], 'admin_pass_word'=>$_SESSION['admin_pass_word'], 'limitpageline'=>$_SESSION['limitpageline'], 'comment_bk_color'=> $_SESSION['comment_bk_color'], 'comment_viewbk_color'=>$_SESSION['comment_viewbk_color']);
+    return $data;
+  }
 }
 ?>

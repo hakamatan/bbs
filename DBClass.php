@@ -34,6 +34,8 @@ class DBClass
   //  定数
   /******************************/
   public $pagelimit = 5;
+  public $bk_color = '#BDB76B';
+  public $viewbk_color = '#FFDEAD';
 
   /******************************/
   //  接続

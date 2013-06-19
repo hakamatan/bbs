@@ -51,6 +51,7 @@ class ViewClass
   public $pagetitle;    //サイトページタイトル
   public $handlename;   //名前
   public $title;        //掲示板タイトル
+  public $retitle;      //掲示板タイトル
   public $comment;      //コメント
   public $up_date;      //掲示板書込み日付
   public $add_date;     //掲示板初期書込み日付
@@ -71,6 +72,10 @@ class ViewClass
   public $comment_bk_color;     //コメント背景カラー
   public $comment_viewbk_color; //コメント一覧背景カラー
   public $dt;           //読込みデータ
+  public $page;         //ページ
+  public $allpage;      //全ページ数
+  public $startrow;     //開始行
+  public $lastrow;      //終了行
 
   /***************************/
   //  コンストラクタ
@@ -122,36 +127,41 @@ class ViewClass
 
   /***************************/
   //  表示ページ
+  //
+  //  $this->urlfile  :送信先プログラム
+  //  $this->page     :現在表示ページ
+  //  $this->startrow :開始行
+  //  $this->lastrow  :終了行
+  //  $this->allpage  :全ページ数
   /***************************/
-  function htmlPageInformation($nowpage, $startrow, $urlfile, $lastrow, $allpage)
+  function htmlPageInformation()
   {
     if(0 < $this->alldata)
     {
-      $info = sprintf('<td>%s 件ありました。現在 [%s - %s] 件を表示しています。 </td>', $this->alldata, $startrow, $lastrow);
+      $info = sprintf('<td>%s 件ありました。現在 [%s - %s] 件を表示しています。 </td>', $this->alldata, $this->startrow, $this->lastrow);
     }
     else
     {
       return '<table><tr><td>該当するデータはありません。</td></tr></table>';
     }
 
-    $top = '<td><a href="'.sprintf($urlfile, 1).'">＜＜先頭へ</a></td>';
-    $back = '<td><a href="'.sprintf($urlfile, $nowpage-1).'">＜前へ&nbsp;</a></td>';
-    $next = '<td><a href="'.sprintf($urlfile, $nowpage+1).'">&nbsp;次へ＞</a></td>';
-    $bottom = '<td><a href="'.sprintf($urlfile, $allpage).'">最後へ＞＞</a></td>';
-    switch ($nowpage)
+    $top = '<td><a href="'.sprintf($this->urlfile, 1).'">＜＜先頭へ</a></td>';
+    $back = '<td><a href="'.sprintf($this->urlfile, $this->page - 1).'">＜前へ&nbsp;</a></td>';
+    $next = '<td><a href="'.sprintf($this->urlfile, $this->page + 1).'">&nbsp;次へ＞</a></td>';
+    $bottom = '<td><a href="'.sprintf($this->urlfile, $this->allpage).'">最後へ＞＞</a></td>';
+    switch ($this->page)
     {
       case 1:
-        $info .= (1 == $allpage) ? '' : $next.$bottom;
-        //$info .= $next.$bottom;
+        $info .= (1 == $this->allpage) ? '' : $next.$bottom;
         break;
-      case $allpage:
+      case $this->allpage:
         $info .= $top.$back;
         break;
       default:
         $info .= $top.$back.$next.$bottom;
         break;
     }
-    $ret = '<table><tr>'.$info.'</tr></table>';
+    $ret = "<table><tr>{$info}</tr></table>";
     return $ret;
   }
 
@@ -185,6 +195,8 @@ class ViewClass
 
   /***************************/
   //  コメント入力
+  //
+  //  $title  :返信メッセージの時使用
   /***************************/
   function htmlCommentNewInput($title = '')
   {
@@ -198,39 +210,50 @@ class ViewClass
 
   /***************************/
   //  コメント入力
+  //
+  //  $this->urlfile    :送信先プログラム
+  //  $this->handlename :名前
+  //  $this->title      :タイトル
+  //  $this->comment    :メッセージ
+  //  $this->pass_word  :更新削除キー
   /***************************/
   function htmlCommentInput()
   {
     return
-    '<!--(3:コメント入力 START)-->
-        <div class="group0">
-          <form action="'.$this->urlfile.'" method="post">
-            <table id="newdata">
-            <tr><th>名前</th><td><input class="jpn" size="51" type="text" name="handlename" value="'.$this->handlename.'"></td></tr>
-            <tr><th>タイトル</th><td><input class="jpn" size="51" type="text" name="title" value="'.$this->title.'"></td></tr>
-            <tr><th class="top">メッセージ</th><td><textarea class="jpn" rows="7" cols="52" name="comment">'.$this->comment.'</textarea></td></tr>
-            <tr><th>更新・削除キー</th><td><input class="pass_word" maxlength="4" size="11" type="text" name="pass_word" value="'.$this->pass_word.'">
-                &nbsp;<span class="small">４桁の英数字</span></td></tr>
-            <tr><th></th><td class="right"><input type="submit" name="btn_insertchk" value="  確認  ">
-                              <input type="reset" name="btn_reset" value="  もとに戻す  "></td></tr>
+    "<!--(3:コメント入力 START)-->
+        <div class='group0'>
+          <form action='{$this->urlfile}' method='post'>
+            <table id='newdata'>
+            <tr><th>名前</th><td><input class='jpn' size='51' type='text' name='handlename' value='{$this->handlename}'></td></tr>
+            <tr><th>タイトル</th><td><input class='jpn' size='51' type='text' name='title' value='{$this->title}'></td></tr>
+            <tr><th class='top'>メッセージ</th><td><textarea class='jpn' rows='7' cols='52' name='comment'>{$this->comment}</textarea></td></tr>
+            <tr><th>更新・削除キー</th><td><input class='pass_word' maxlength='4' size='11' type='text' name='pass_word' value='{$this->pass_word}'>
+                &nbsp;<span class='small'>４桁の英数字</span></td></tr>
+            <tr><th></th><td class='right'><input type='submit' name='btn_insertchk' value='  確認  '>
+                              <input type='reset' name='btn_reset' value='  もとに戻す  '></td></tr>
             </table>
           </form>
         </div>
-    <!--(3:コメント入力 END)-->';
+    <!--(3:コメント入力 END)-->";
   }
 
   /***************************/
   //  テキストパーツ
+  //
+  //  $val:文字を赤くする時使用
   /***************************/
   function htmlSpanRed($val)
   {
-    return '<span><font color="red">'.$val.'</font></span><br>';
+    return "<span><font color='red'>{$val}</font></span><br>";
   }
 
   /****************************/
   //  ボタン種類
   /****************************/
-  public $buttonarray = array('', 'OK', 'YesNO',
+  public $buttonarray = array(
+          '',
+          'OK',
+          'YesNO',
           'top'=>'btn_page_top',
           'next'=>'btn_page_next',
           'back'=>'btn_page_back',
@@ -238,6 +261,11 @@ class ViewClass
   );
   /***************************/
   //  メッセージ
+  //
+  //  $this->msg        :表示メッセージ
+  //  $this->button     :表示ボタン種類
+  //  $this->urlfile    :送信先プログラム
+  //  $this->button_name:表示ボタン名
   /***************************/
   function htmlMessage()
   {
@@ -249,22 +277,22 @@ class ViewClass
             switch ($this->button)
             {
               case $this->buttonarray[1]:
-                $ret .= '<form action="'.$this->urlfile.'" method="post">';
-                $ret .= '<input type="submit" name="btn_back" value="  戻る  ">';
-                $ret .= '</form>';
+                $ret .= "<form action='{$this->urlfile}' method='post'>";
+                $ret .= "<input type='submit' name='btn_back' value='  戻る  '>";
+                $ret .= "</form>";
                 break;
               case $this->buttonarray[2]:
-                $ret .= '<table><tr><td>';
-                $ret .= '<form action="'.$this->urlfile[0].'" method="post">';
-                $ret .= '<input type="submit" name="'.$this->button_name[0].'" value="  はい  ">';
-                $ret .= '</form></td><td>';
-                $ret .= '<form action="'.$this->urlfile[1].'" method="post">';
-                $ret .= '<input type="submit" name="'.$this->button_name[1].'" value="  やめる  ">';
-                $ret .= '</form>';
-                $ret .= '</td></tr></table>';
+                $ret .= "<table><tr><td>";
+                $ret .= "<form action='{$this->urlfile[0]}' method='post'>";
+                $ret .= "<input type='submit' name='{$this->button_name[0]}' value='  はい  '>";
+                $ret .= "</form></td><td>";
+                $ret .= "<form action='{$this->urlfile[1]}' method='post'>";
+                $ret .= "<input type='submit' name='{$this->button_name[1]}' value='  やめる  '>";
+                $ret .= "</form>";
+                $ret .= "</td></tr></table>";
                 break;
               default:
-                $ret .= '<input type="button" value="  戻る  " onclick="history.back();"><br>';
+                $ret .= "<input type='button' value='  戻る  ' onclick='history.back();'><br>";
                 break;
             };
             $ret .= '</div>
@@ -276,137 +304,205 @@ class ViewClass
 
   /***************************/
   //  エラーメッセージ
+  //
+  //  $this->msg:表示メッセージ
   /***************************/
   function htmlErrMessage()
   {
-    $ret = '
+    return "
       <!--(5:メッセージ表示 START)-->
-          <div class="group10">
-            <div id="msg">'.
-            $this->htmlSpanRed($this->msg).'<br>
-            <input type="button" value="  戻る  " onclick="history.back();"><br>
+          <div class='group10'>
+            <div id='msg'>{$this->htmlSpanRed($this->msg)}<br>
+            <input type='button' value='  戻る  ' onclick='history.back();'><br>
             </div>
           </div>
-      <!--(5:メッセージ表示 END)-->';
-    return $ret;
+      <!--(5:メッセージ表示 END)-->";
   }
 
   /***************************/
   //  コメント入力確認
+  //
+  //  $this->handlename :名前
+  //  $this->title      :タイトル
+  //  $this->comment    :メッセージ
+  //  $this->pass_word  :更新削除キー
   /***************************/
   function htmlCommentCheck()
   {
-    $ret = 
-    '<!--(4:コメント確認 START)-->
-        <div class="group0">
-          <form action="" method="post">
-            <table id="newdatacheck">
-            <tr><th>名前</th><td>'.$this->handlename.'</td></tr>
-            <tr><th>タイトル</th><td>'.$this->title.'</td></tr>
-            <tr><th>メッセージ</th><td>'.nl2br($this->comment).'</td></tr>
-            <tr><th>更新・削除キー</th><td>'.$this->pass_word.'</td></tr>
-            <tr><th></th><td class="right"><input type="submit" name="btn_insert" value="  書込み  ">
-                              <input type="button" value="  戻る   " onclick="history.back();"></td></tr>
+    $comment = nl2br($this->comment);
+    return 
+    "<!--(4:コメント確認 START)-->
+        <div class='group0'>
+          <form action='' method='post'>
+            <table id='newdatacheck'>
+            <tr><th>名前</th><td>{$this->handlename}</td></tr>
+            <tr><th>タイトル</th><td>{$this->title}</td></tr>
+            <tr><th>メッセージ</th><td>{$comment}</td></tr>
+            <tr><th>更新・削除キー</th><td>{$this->pass_word}</td></tr>
+            <tr><th></th><td class='right'><input type='submit' name='btn_insert' value='  書込み  '>
+                              <input type='button' value='  戻る   ' onclick='history.back();'></td></tr>
             </table>
-            <input type="hidden" name="handlename" value="'.$this->handlename.'">
-            <input type="hidden" name="title" value="'.$this->title.'">
-            <input type="hidden" name="comment" value="'.$this->comment.'">
-            <input type="hidden" name="pass_word" value="'.$this->pass_word.'">
+            <input type='hidden' name='handlename' value='{$this->handlename}'>
+            <input type='hidden' name='title' value='{$this->title}'>
+            <input type='hidden' name='comment' value='{$this->comment}'>
+            <input type='hidden' name='pass_word' value='{$this->pass_word}'>
           </form>
         </div>
-    <!--(4:コメント確認 END)-->';
-    return $ret;
+    <!--(4:コメント確認 END)-->";
   }
 
   /***************************/
   //  コメントサーチ
+  //
+  //  $this->board_id:ボードID
   /***************************/
   function htmlCommentSearch()
   {
     $urlfile = sprintf($this->urlarray['grp_add'], $this->board_id, 1);
-    return '
-        <a href="'.$urlfile.'">グループを表示する</a>';
+    return "<a href='{$urlfile}'>グループを表示する</a>";
   }
 
   /***************************/
   //  グループ一覧
+  //
+  //  $this->cnt :グループ1件目1、以外2よりスタート
+  //  $this->page:表示ページ
+  //  $search:検索の時に使用する
   /***************************/
-  function htmlGroupView($GroupView, $SubGroupView)
+  function htmlGroupView($search = '')
   {
-    $ret = '
-    <!--(1:グループ一覧 START)-->
-        <div class="group0">';
-    $ret .= $GroupView;
-    $ret .= $SubGroupView;
-    $ret .= '
+    $ret = '';
+    foreach ($this->dt[0] as $dr)
+    {
+      $this->retitle = $dr['title'];
+      $this->SetGroupData($dr, $this->cnt[0]);
+      $ret .= "
+        <!--(1:グループ一覧 START)-->
+        <div class='group0'>
+          {$this->htmlGroupViewComment()}
+          <right><!--btn:start-->
+            <div class='button0'>";
+        $ret .= ($search != '') ? $this->htmlCommentSearch() : $this->htmlGroupViewButton();
+        $ret .= "
+            </div>
+          </right><!--btn:end-->";
+
+      if($this->dt[1] != null)
+      {
+        foreach ($this->dt[1] as $dr)
+        {
+          $this->SetGroupData($dr, $this->cnt[1]);
+          $ret .= "
+          <!--(1-1:サブグループ一覧 START)-->
+                <right>
+                <div class='group1'>
+                {$this->htmlGroupViewComment()}
+                <right><!--btn:start-->
+                  <div class='button1'>
+                  {$this->htmlGroupViewButton()}
+                  </div>
+                </right><!--btn:end-->
+                </div>
+                </right>
+          <!--(1-1:サブグループ一覧 END)-->";
+          $this->cnt[1]++;
+        }
+      }
+      $ret .= '
       </div>
       <!--(1:グループ一覧 END)-->';
-    return $ret;
-  }
-
-  /***************************/
-  //  グループ一覧
-  /***************************/
-  function htmlGroupViewFirst($search = '')
-  {
-    $ret = $this->htmlGroupViewComment();
-    $ret .= '
-          <right><!--btn:start-->
-          <div class="button0">';
-    $ret .= ($search != '') ? $this->htmlCommentSearch() : $this->htmlGroupViewButton();
-    $ret .= '
-          </div>
-          </right><!--btn:end-->';
+      $this->cnt[0]++;
+    }
     return $ret;
   }
 
   /***************************/
   //  グループ一覧パーツ
+  //
+  //  $dr :データ項目
+  //  $cnt:カウント
+  /***************************/
+  function SetGroupData($dr, $cnt)
+  {
+    $this->board_id = $dr['board_id'];
+    $this->comment_id = $dr['comment_id'];
+    $this->title = $dr['title'];
+    $this->handlename = $dr['handlename'];
+    $this->comment = $dr['comment'];
+    $this->up_date = $dr['up_date'];
+    $this->urlfile = sprintf($this->urlarray['grp_edit'], $this->board_id, $this->comment_id, $cnt, $this->page);
+  }
+  
+  /***************************/
+  //  グループ一覧パーツ
+  //
+  //  $this->title      :タイトル
+  //  $this->handlename :名前
+  //  $this->up_date    :更新日付
+  //  $this->comment    :メッセージ
   /***************************/
   function htmlGroupViewComment()
   {
-    return '
-      <div class="title_name">'.$this->title.'  ---  '.$this->handlename.'</div>
-      <div class="time">'.$this->up_date.'</div>
-      <div class="comment">'.nl2br($this->comment).'</div>';
+    $comment = nl2br($this->comment);
+    return "
+      <div class='title_name'>{$this->title}  ---  {$this->handlename}</div>
+      <div class='time'>{$this->up_date}</div>
+      <div class='comment'>{$comment}</div>";
   }
 
   /***************************/
   //  グループ一覧パーツ
+  //
+  //  $this->urlfile:送信先プログラム
   /***************************/
   function htmlGroupViewButton()
   {
-    $ret = '
-      <div class="btn1">
-        <form action="'.$this->urlfile.'&type=1" method="post"><input type="submit" name="btn_update" value=" 編集 "></form>
-      </div>';
-    $ret .= '
-      <div class="btn2">
-        <form action="'.$this->urlfile.'&type=2" method="post"><input type="submit" name="btn_delete" value=" 削除 "></form>
-      </div>';
+    $ret = "
+      <div class='btn1'>
+        <form action='{$this->urlfile}&type=1' method='post'><input type='submit' name='btn_update' value=' 編集 '></form>
+      </div>";
+    $ret .= "
+      <div class='btn2'>
+        <form action='{$this->urlfile}&type=2' method='post'><input type='submit' name='btn_delete' value=' 削除 '></form>
+      </div>";
     return $ret;
   }
 
   /***************************/
   //  サブグループ一覧
+  //
+  //  $this->cnt :グループ1件目1、以外2よりスタート
+  //  $this->page:表示ページ
   /***************************/
   function htmlSubGroupView()
   {
-    $ret = '
-    <!--(1-1:サブグループ一覧 START)-->
-          <right>
-          <div class="group1">';
-    $ret .= $this->htmlGroupViewComment();
-    $ret .= '
-          <right><!--btn:start-->
-            <div class="button1">';
-    $ret .= $this->htmlGroupViewButton();
-    $ret .= '
+    $ret = '';
+    foreach ($this->dt as $dr)
+    {
+      $this->comment_id = $dr['comment_id'];
+      $this->title = $dr['title'];
+      $this->handlename = $dr['handlename'];
+      $this->comment = $dr['comment'];
+      $this->up_date = $dr['up_date'];
+      $this->urlfile = sprintf($this->urlarray['grp_edit'], $this->board_id, $this->comment_id, $this->cnt, $this->page);
+
+      $ret .= '
+      <!--(1-1:サブグループ一覧 START)-->
+            <right>
+            <div class="group1">';
+      $ret .= "{$this->htmlGroupViewComment()}";
+      $ret .= "
+            <right><!--btn:start-->
+              <div class='button1'>";
+      $ret .= "{$this->htmlGroupViewButton()}";
+      $ret .= '
+              </div>
+            </right><!--btn:end-->
             </div>
-          </right><!--btn:end-->
-          </div>
-          </right>
-    <!--(1-1:サブグループ一覧 END)-->';
+            </right>
+      <!--(1-1:サブグループ一覧 END)-->';
+      $this->cnt++;
+    }
     return $ret;
   }
 
@@ -518,6 +614,10 @@ class ViewClass
 
   /***************************/
   //  管理者カラーラジオボタン
+  //
+  //  $radio_array:ラジオボタン種類
+  //  $name       :ボタン名
+  //  $data       :データ
   /***************************/
   function htmlColorRadioButton($radio_array, $name, $data)
   {
@@ -528,7 +628,6 @@ class ViewClass
     foreach($radio_array as $key => $val)
     {
       $checked = ($key == $data || $flg != '') ? " checked='checked'" : "";
-      //$ret .= "<input type='radio' name='{$name}' value='{$key}'{$checked}><font color=\"".$key."\">".$val."</font>";
       $ret .= "<input type='radio' name='{$name}' value='{$key}'{$checked}><font color='{$key}'>{$val}</font>";
     }
     return $ret;

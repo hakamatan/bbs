@@ -6,14 +6,12 @@
   require_once('ViewClass.php');
   require_once('DataCheckClass.php');
 
-
   $view = new ViewClass();
   $dc = new DataCheckClass();
   $db = new DBClass();
 
   //セッション
-  session_cache_limiter('private, must-revalidate');
-  session_start();
+  $dc->SessionStart();
 
   /*****************************/
   //  ログアウト
@@ -21,7 +19,7 @@
   if(isset($_POST['logout']))
   {
     //データ破棄
-    Logout();
+    $dc->SessionDestroy();
   }
 
   /*****************************/
@@ -35,8 +33,6 @@
     /*****************************/
     //  データ入力チェック
     /*****************************/
-//    print printf("(データ入力チェック) admin_id_' => %s, 'admin_pass_word_' => %s <br>",$admin_id_, $admin_pass_word_);
-
     $itemarray = array('admin_id' => $admin_id_, 'admin_pass_word' => $admin_pass_word_);
     $view->msg = $dc->InputDataCheck($itemarray);
     if(strlen($view->msg) > 0)
@@ -63,10 +59,8 @@
       }
       
       //管理者テーブル追加
-      //print printf("(管理者ＩＤ新規登録) admin_id_' => %s, 'admin_pass_word_' => %s <br>",$admin_id_, $admin_pass_word_);
       $db->admin_id = $admin_id_;
       $db->admin_pass_word = $admin_pass_word_;
-      
       $db->AddAdminInfo();
       
       //追加したデータ読込み
@@ -82,11 +76,8 @@
       }
 
       //セッション変数定義
-      $_SESSION['admin_id'] = $admin_id_;
-      $_SESSION['admin_pass_word'] = $admin_pass_word_;
-      $_SESSION['comment_bk_color'] = $comment_bk_color;
-      $_SESSION['comment_viewbk_color'] = $comment_viewbk_color;
-      $_SESSION['limitpageline'] = $limitpageline;
+      $item = array('admin_id'=>$admin_id_, 'admin_pass_word'=>$admin_pass_word_, 'comment_bk_color'=>$comment_bk_color, 'comment_viewbk_color'=>$comment_viewbk_color, 'limitpageline'=> $limitpageline);
+      $dc->SetSession($item);
       
       $view->pagetitle = $view->pagetitlearray['insert'];
       $view->msg = $view->msgarray['ok'];
@@ -115,7 +106,6 @@
       //管理者テーブル読込み
       $db->admin_id = $admin_id_;
       $db->admin_pass_word = $admin_pass_word_;
-      
       $dt = $db->GetAdminInfo($admin_id_);
       foreach ($dt as $dr)
       {
@@ -125,11 +115,8 @@
       }
 
       //セッション変数定義
-      $_SESSION['admin_id'] = $admin_id_;
-      $_SESSION['admin_pass_word'] = $admin_pass_word_;
-      $_SESSION['comment_bk_color'] = $comment_bk_color;
-      $_SESSION['comment_viewbk_color'] = $comment_viewbk_color;
-      $_SESSION['limitpageline'] = $limitpageline;
+      $item = array('admin_id'=>$admin_id_, 'admin_pass_word'=>$admin_pass_word_, 'comment_bk_color'=>$comment_bk_color, 'comment_viewbk_color'=>$comment_viewbk_color, 'limitpageline'=> $limitpageline);
+      $dc->SetSession($item);
     }
   }
 
@@ -144,16 +131,19 @@
     $free_viewbk_color_ = $_POST['free_viewcolor'];
     $limitpageline_ = $_POST['limitpageline'];
     
-    $db->comment_bk_color = 0 < strlen($comment_bk_color_) ? $comment_bk_color_ : $free_bk_color_;
-    $db->comment_viewbk_color = 0 < strlen($comment_viewbk_color_) ? $comment_viewbk_color_ : $free_viewbk_color_;
+    //DB更新
+    $bk_color = 0 < strlen($comment_bk_color_) ? $comment_bk_color_ : $free_bk_color_;
+    $viewbk_color = 0 < strlen($comment_viewbk_color_) ? $comment_viewbk_color_ : $free_viewbk_color_;
+    $db->comment_bk_color = $bk_color;
+    $db->comment_viewbk_color = $viewbk_color;
     $db->limitpageline = $limitpageline_;
     $db->EditAdminInfo($_SESSION['admin_id']);
 
     //セッション変数定義
-    $_SESSION['comment_bk_color'] = $db->comment_bk_color;
-    $_SESSION['comment_viewbk_color'] = $db->comment_viewbk_color;
-    $_SESSION['limitpageline'] = $db->limitpageline;
+    $item = array('comment_bk_color'=>$bk_color, 'comment_viewbk_color'=>$viewbk_color, 'limitpageline'=> $limitpageline_);
+    $dc->SetSession($item);
     
+    //表示
     $view->pagetitle = $view->pagetitlearray['update'];
     $view->msg = $view->msgarray['ok'];
     $view->urlfile = $view->urlarray['admin'];
@@ -167,7 +157,7 @@
   /*****************************/
   //  ログアウト時の表示
   /*****************************/
-  if(!isset($_SESSION['admin_id']) || !isset($_SESSION['admin_pass_word']))
+  if(!$dc->CheckLogin())
   {//ログイン画面
     $view->pagetitle = $view->pagetitlearray['adminlogin'];
     $view->contents = $view->htmlAdminCheck();
@@ -178,24 +168,18 @@
   /*****************************/
   //  ログイン時の表示
   /*****************************/
-  if(isset($_SESSION['admin_id']) && isset($_SESSION['admin_pass_word']))
+  if($dc->CheckLogin())
   {//設定画面
-    $view->admin_id = $_SESSION['admin_id'];
+    $session_data = $dc->GetSession();
+    $view->admin_id = $session_data['admin_id'];
+    $view->limitpageline = $session_data['limitpageline'];
+    $view->comment_bk_color = $session_data['comment_bk_color'];
+    $view->comment_viewbk_color = $session_data['comment_viewbk_color'];
+    
     $view->pagetitle = $view->pagetitlearray['adminsetting'];
-    $view->limitpageline = $_SESSION['limitpageline'];
-    $view->comment_bk_color = $_SESSION['comment_bk_color'];
-    $view->comment_viewbk_color = $_SESSION['comment_viewbk_color'];
     $view->contents = $view->htmlAdminSetting();
     echo $view->htmlView();
     return;
   }
 
-/*****************************/
-//  データ破棄
-/*****************************/
-function Logout()
-{
-  $_SESSION = array();
-  session_destroy();
-}
 ?>
