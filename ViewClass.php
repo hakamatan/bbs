@@ -67,10 +67,7 @@ class ViewClass
   public $button_name;  //表示ボタン名
   public $alldata;      //全件数
   public $pageinfo;     //ページ情報
-  public $limitpageline;  //１頁表示件数
   public $search_word;  //検索ワード
-  public $comment_bk_color;     //コメント背景カラー
-  public $comment_viewbk_color; //コメント一覧背景カラー
   public $dt;           //読込みデータ
   public $page;         //ページ
   public $allpage;      //全ページ数
@@ -106,7 +103,6 @@ class ViewClass
     <body>
     <center>
     <div id='maincontents'>
-      <br>
       <div id='maintitle'><h3>■　掲示板　■</h3></div>
       <div id='homelnk'><ul><li><a href='./'>HOME</a></li>&nbsp;|&nbsp;<li><a href='admin.php'>管理者画面</a></li></ul></div>
       <div id='pagetitle'>{$this->pagetitle}</div>
@@ -116,7 +112,6 @@ class ViewClass
     $ret .= "
       </div>
       <!--コンテンツ END -->
-      <br>
       <div id='pageinfo'>{$this->pageinfo}</div>
     </div>
     </center>
@@ -549,31 +544,54 @@ class ViewClass
   }
 
   /***************************/
+  //  プロパティ（管理者画面）
+  /***************************/
+  public $limitpageline;          //１頁表示件数
+  public $board_backcolor;       //背景カラー
+  public $comment_backcolor;   //一覧背景カラー
+  public $body_backcolor;     //背景カラー
+  public $subcomment_backcolor; //一覧サブ背景カラー
+  public $commentboard_backcolor;  //掲示板背景カラー
+  public $titel_backcolor; //掲示板タイトルカラー
+
+  /***************************/
   //  管理者画面
   //
-  //  $this->comment_bk_color     :コメント背景カラー
-  //  $this->comment_viewbk_color :コメント一覧背景カラー
+  //  $this->board_backcolor     :コメント背景カラー
+  //  $this->comment_backcolor :コメント一覧背景カラー
   //  $this->limitpageline        :１頁表示件数
+  //  $this->body_backcolor   :ボディ背景カラー
+  //  $this->subcomment_backcolor :一覧サブ背景カラー
+  //  $this->commentboard_backcolor:掲示板背景カラー
+  //  $this->titel_backcolor:タイトルカラー
   /***************************/
   function htmlAdminSetting()
   {
-    $ret = '
+    $ret = "
     <!--(8:管理画面 色 START)-->
-        <div class="group0">
-          <div id="adminlogout"><br>
-          <form action="" method="post">
-          <p><b>'.$this->admin_id.'&nbsp;さん</b></p><br>
-          <input type="submit" name="logout" value="  ログアウト  ">
+        <div class='group0'>
+          <div id='adminlogout'><br>
+          <form action='' method='post'>
+          <p><b>{$this->admin_id}&nbsp;さん</b></p><br>
+          <input type='submit' name='logout' value='  ログアウト  '>
           </form>
           </div><br>
-          <div id="adminsetting">
-          <form action="" method="post">';
+          <div id='adminsetting'>
+          <form action='' method='post'>";
     $ret .= 
           "<table>
-          <tr><th>掲示板背景カラー</th><td>{$this->htmlColorRadioButton($this->comcolorarray, 'comcolor', $this->comment_bk_color)}
-          <input class='pass_word' type='text' name='free_comcolor' maxlength=7  size='8' value='{$this->comment_bk_color}'></td></tr>
-          <tr><th>掲示板一覧カラー</th><td>{$this->htmlColorRadioButton($this->viewcolor_array, 'viewcolor', $this->comment_viewbk_color)}
-          <input class='pass_word' type='text' name='free_viewcolor' maxlength=7  size='8' value='{$this->comment_viewbk_color}'></td></tr>
+          <tr><th>入力部背景カラー</th><td>{$this->htmlColorRadioButton($this->colorarray, 'comcolor', $this->board_backcolor)}
+          <input class='pass_word' type='text' name='free_comcolor' maxlength=7  size='8' value='{$this->board_backcolor}'></td></tr>
+          <tr><th>一覧表示部カラー</th><td>{$this->htmlColorRadioButton($this->colorarray, 'viewcolor', $this->comment_backcolor)}
+          <input class='pass_word' type='text' name='free_viewcolor' maxlength=7  size='8' value='{$this->comment_backcolor}'></td></tr>
+          <tr><th>背景カラー</th><td>{$this->htmlColorRadioButton($this->colorarray, 'bodycolor', $this->body_backcolor)}
+          <input class='pass_word' type='text' name='free_body_color' maxlength=7  size='8' value='{$this->body_backcolor}'></td></tr>
+          <tr><th>掲示板タイトルカラー</th><td>{$this->htmlColorRadioButton($this->colorarray, 'titelcolor', $this->titel_backcolor)}
+          <input class='pass_word' type='text' name='free_titel_bk_color' maxlength=7  size='8' value='{$this->titel_backcolor}'></td></tr>
+          <tr><th>掲示板背景カラー</th><td>{$this->htmlColorRadioButton($this->colorarray, 'maincolor', $this->commentboard_backcolor)}
+          <input class='pass_word' type='text' name='free_main_bk_color' maxlength=7  size='8' value='{$this->commentboard_backcolor}'></td></tr>
+          <tr><th>一覧表示サブ部背景カラー</th><td>{$this->htmlColorRadioButton($this->colorarray, 'subcolor', $this->subcomment_backcolor)}
+          <input class='pass_word' type='text' name='free_subgroup_color' maxlength=7  size='8' value='{$this->subcomment_backcolor}'></td></tr>
           <tr><th>１頁表示件数</th><td><input class='pass_word' type='text' name='limitpageline' maxlength=2  size='3' value='{$this->limitpageline}'></td></tr>
           </table><br>
           <input type='submit' name='btn_setting' value=' 設定  '>
@@ -589,28 +607,17 @@ class ViewClass
   /***************************/
   //  掲示板背景カラー
   /***************************/
-  private $comcolorarray = array(
-        '#ffffff'=>'■',
-        '#eee8aa'=>'■',
-        '#48d1cc'=>'■',
-        '#e9967a'=>'■',
-        '#bc8f8f'=>'■',
-        '#ffa500'=>'■',
+  private $colorarray = array(
+        '#E6E6E6'=>'■',
+        '#F5A9E1'=>'■',
+        '#D0A9F5'=>'■',
+        '#A9BCF5'=>'■',
+        '#A9F5F2'=>'■',
+        '#A9F5BC'=>'■',
+        '#D0F5A9'=>'■',
+        '#F3E2A9'=>'■',
         ''=>'フリー'
         );
-
-  /***************************/
-  //  掲示板一覧カラー
-  /***************************/
-  private $viewcolor_array = array(
-        '#ffffff'=>'●',
-        '#eee8aa'=>'●',
-        '#48d1cc'=>'●',
-        '#e9967a'=>'●',
-        '#bc8f8f'=>'●',
-        '#ffa500'=>'●',
-        ''=>'フリー'
-);
 
   /***************************/
   //  管理者カラーラジオボタン

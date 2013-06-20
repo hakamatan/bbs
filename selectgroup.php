@@ -69,15 +69,6 @@
     if(2 == $_GET['type'])
     {
       CheckDelete($board_id_, $comment_id_, $line_);
-/*      $view->pagetitle = $view->pagetitlearray['delete'];
-      $view->msg = '本当に削除していいですか？';
-      $urlyes = sprintf($view->urlarray['del'], $board_id_, $comment_id_, $line_);
-      $urlno = sprintf($view->urlarray['grp_add'], $board_id_, 1);
-      $view->urlfile = array($urlyes, $urlno);
-      $view->button = $view->buttonarray[2];
-      $view->button_name = array('btn_delete','btn_cancel');
-      $view->contents = $view->htmlMessage();
-      echo $view->htmlView();*/
       return;
     }
   }
@@ -86,9 +77,8 @@
   //ページリンク作成
   /*****************************/
   $page_ = isset($_GET['page']) ? $_GET['page'] : 1;
-  $startrow = 0;  //表示開始レコード
-  $allpage_ = 1;  //全ページ
-  $allcount = 0;  //全件数
+  $dc->GetPageInitialeVlaue($startrow, $allpage_, $allcount);//表示開始レコード//全ページ//全件数
+  //print sprintf("startrow=%s, allpage_=%s, allcount=%s <br>", $startrow, $allpage_, $allcount);
 
   $pagelimit = $dc->GetPageLimit();
   $startrow = $dc->GetStartRow($page_, $pagelimit);
@@ -111,42 +101,26 @@
   $retitle = sprintf("Re:%s", $view->retitle);
 
   //  全件データ件数取得
-  foreach ($dt[1] as $dr)
-  {
-    $allcount = $dr['count'];
-  }
+  $allcount = $dc->GetAllDataCount($dt[1]);
   $view->alldata = $allcount;
 
   /*****************************/
   //  コメント入力部作成
   /*****************************/
-/*  if(!$dc->CheckLogin())
-  {//ログアウト中
-    if(isset($_POST['btn_keycheck']))
-    {//更新
-      $contents .= GetUpdata($updelkey_, $board_id_, $comment_id_);
-    }
-    else
-    {//返信新規
-      $view->urlfile = sprintf($view->urlarray['returnadd'], $board_id_);
-      $contents .= $view->htmlCommentNewInput($retitle);
-    }
-  }
-  else
-  {//ログイン中
-    if(isset($_GET['type']) && 1==$_GET['type'])
-    {//更新
-      $contents .= GetUpdata($updelkey_, $board_id_, $comment_id_);
-    }
-    else
-    {
-      $view->urlfile = sprintf($view->urlarray['returnadd'], $board_id_);
-      $contents .= $view->htmlCommentNewInput($retitle);
-    }
-  }*/
   if(isset($_POST['btn_keycheck']) || (isset($_GET['type']) && 1==$_GET['type']))
   {//更新
-    $contents .= GetUpdata($updelkey_, $board_id_, $comment_id_);
+    $dt = $db->GetComment($updelkey_);
+    foreach($dt as $dr)
+    {
+      $view->comment_id = $dr['comment_id'];
+      $view->board_id = $dr['board_id'];
+      $view->comment = $dr['comment'];
+      $view->title = $dr['title'];
+      $view->handlename = $dr['handlename'];
+      $view->pass_word = $dr['pass_word'];
+    }
+    $view->urlfile = sprintf($view->urlarray['edit'], $board_id_, $comment_id_);
+    $contents .= $view->htmlCommentInput();
   }
   else
   {//返信新規
@@ -188,25 +162,4 @@
     echo $view->htmlView();
  }
 
-  /*****************************/
-  //  更新データ表示
-  /*****************************/
-  function GetUpdata($updelkey, $board_id, $comment_id)
-  {
-    $view = new ViewClass();
-    $db = new DBClass();
-    
-    $dt = $db->GetComment($updelkey);
-    foreach($dt as $dr)
-    {
-      $view->comment_id = $dr['comment_id'];
-      $view->board_id = $dr['board_id'];
-      $view->comment = $dr['comment'];
-      $view->title = $dr['title'];
-      $view->handlename = $dr['handlename'];
-      $view->pass_word = $dr['pass_word'];
-    }
-    $view->urlfile = sprintf($view->urlarray['edit'], $board_id, $comment_id);
-    return $view->htmlCommentInput();
-  }
 ?>

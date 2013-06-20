@@ -1,40 +1,40 @@
 <?php 
   header('Content-Type: text/css; charset=utf-8');
-
+?>
+@charset "UTF-8";
+<?php
   //セッション
   session_cache_limiter('private, must-revalidate');
   session_start();
-
+  
+  if(isset($_SESSION['admin_id']) && isset($_SESSION['admin_pass_word']))
+  {
+     $bk_color = $_SESSION['board_backcolor'];
+     $viewbk_color = $_SESSION['comment_backcolor'];
+     $subgroup_color = $_SESSION['subcomment_backcolor'];
+     $body_color = $_SESSION['body_backcolor'];
+     $main_bk_color = $_SESSION['commentboard_backcolor'];
+     $title_color = $_SESSION['titel_backcolor'];
+  }
+  else
+  {
+     $bk_color = '#40e0d0';
+     $viewbk_color = '#b0e0e6';
+     $subgroup_color = '#add8e6';
+     $body_color = '#ffffff';
+     $main_bk_color = '#48d1cc';
+     $title_color = '#1e90ff';
+  }
+  
 /*  require_once('DataCheckClass.php');
 
   $dc = new DataCheckClass();
   //セッション
   $dc->SessionStart();
-
-  $ret = $dc->GetColor();
-  if($ret != null)
-  {
-    list($bk_color, $viewbk_color) = $ret;
-  }
-  else
-  {
-     $bk_color = '#BDB76B';
-     $viewbk_color = '#FFDEAD';
-  }
-  */
-  if(isset($_SESSION['admin_id']) && isset($_SESSION['admin_pass_word']))
-  {
-     $bk_color = $_SESSION['comment_bk_color'];
-     $viewbk_color = $_SESSION['comment_viewbk_color'];
-  }
-  else
-  {
-     $bk_color = '#BDB76B';
-     $viewbk_color = '#FFDEAD';
-  }
+  $item = array('board_backcolor'=>$bk_color ,'comment_backcolor'=>$viewbk_color, 'subcomment_backcolor'=>$subgroup_color, 'body_backcolor'=>$body_color, 'commentboard_backcolor'=>$main_bk_color, 'titel_backcolor'=>$title_color);
+  $dc->GetColor($item);
+*/
 ?>
-
-
 * {
   padding:0px;
   margin:0px;
@@ -45,20 +45,22 @@ body {
   width:800px;
   margin-right:auto;
   margin-left:auto;
+  background-color:<?php echo $body_color ?>;
 }
 #maintitle {
   font-size:15pt;
   width:800px;
   font-weight:bold;
-  background-color: #E6E6FA;
+  background-color:<?php echo $title_color ?>;
   border-top:2px solid #888888;
   border-bottom:2px solid #888888;
+  margin-top:10px;
   padding-top: 5px;
   padding-bottom: 5px;
 }
 
 #homelnk {
-  background-color        : #ffffd9;
+  background-color:<?php echo $main_bk_color ?>;
   padding-top: 5px;
   text-align:right;
 }
@@ -72,14 +74,14 @@ body {
 }
 
 #pagetitle {
-  background-color        : #ffffd9;
-  border-bottom     : 1px solid #cccccc;
+  background-color:<?php echo $main_bk_color ?>;
+  /*border-bottom: 1px solid #cccccc;*/
   padding-top: 5px;
   padding-bottom: 5px;
 }
 
 #pageinfo {
-  background-color        : #ffffd9;
+  background-color:<?php echo $main_bk_color ?>;
   padding-top: 5px;
   padding-bottom: 5px;
 }
@@ -89,14 +91,16 @@ body {
   width:800px;
   margin-right:auto;
   margin-left:auto;
-  background-color:#FFB6C1;
+  background-color:<?php echo $main_bk_color ?>;
 }
 #contents {
   word-wrap:break-word;
   width:800px;
   margin-right:auto;
   margin-left:auto;
-  background-color:#7FFF00;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  background-color:<?php echo $main_bk_color ?>;
 }
 .group10 {
   word-wrap:break-word;
@@ -105,7 +109,7 @@ body {
   margin-bottom:10px;;  
   margin-right:auto;
   margin-left:auto;  
-  background-color:#BaBafB;
+  background-color:<?php echo $main_bk_color ?>;
   padding:5px;
   clear:both;
 }
@@ -127,7 +131,7 @@ body {
   width:590px;
   margin-right:auto;
   margin-left:10px;  
-  background-color:#FFD700;
+  background-color:<?php echo $subgroup_color ?>;
   padding-top:5px;
   padding-bottom:5px;
   border-top: 1px solid #000000;
@@ -152,7 +156,6 @@ body {
   margin-bottom:10px;;  
   margin-right:auto;
   margin-left:auto;  
-  /*background-color:#FFDEAD;*/
   background-color:<?php echo $viewbk_color ?>;
   padding5px;
 }
@@ -259,3 +262,4 @@ body {
 #adminsetting th {
   text-align:left;
 }
+

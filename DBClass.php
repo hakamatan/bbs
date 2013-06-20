@@ -23,9 +23,13 @@ class DBClass
   public $handlename;
   public $pass_word;
   public $comment_id;
-  public $comment_bk_color;
-  public $comment_viewbk_color;
+  public $board_backcolor;
+  public $comment_backcolor;
   public $limitpageline;
+  public $subcomment_backcolor;
+  public $commentboard_backcolor;
+  public $titel_backcolor;
+  public $body_backcolor;
 
   private $sql = '';
   private $sql_param = '';
@@ -315,11 +319,11 @@ class DBClass
     try
     {
       $this->DBOpen();
-      $val = "comment_bk_color = :bk_color, comment_viewbk_color = :viewbk_color, limitpageline = :limitpageline";
+      $val = "board_backcolor = :bk_color, comment_backcolor = :viewbk_color, limitpageline = :limitpageline, subcomment_backcolor = :subgroup_color, commentboard_backcolor = :main_bk_color, titel_backcolor = :titel_bk_color, body_backcolor = :body_color";
       $where = "admin_id = :admin_id";
 
       $this->sql = $this->GetUpdateSql("user", $val, $where);
-      $this->sql_param = array('admin_id'=>$admin_id, 'bk_color'=>$this->comment_bk_color, 'viewbk_color'=>$this->comment_viewbk_color, 'limitpageline'=>$this->limitpageline);
+      $this->sql_param = array('admin_id'=>$admin_id, 'bk_color'=>$this->board_backcolor, 'viewbk_color'=>$this->comment_backcolor, 'limitpageline'=>$this->limitpageline, 'subgroup_color'=>$this->subcomment_backcolor, 'main_bk_color'=>$this->commentboard_backcolor, 'titel_bk_color'=>$this->titel_backcolor, 'body_color'=>$this->body_backcolor);
       $this->UpdateData();
 
       $this->DbClose();
@@ -534,7 +538,7 @@ class DBClass
     {
       $this->DBOpen();
 
-      $val = "admin_id , admin_pass_word, comment_bk_color, comment_viewbk_color, limitpageline";
+      $val = "admin_id , admin_pass_word, board_backcolor, comment_backcolor, limitpageline, body_backcolor, subcomment_backcolor, commentboard_backcolor, titel_backcolor";
       $tbl = "user";
       $where = "where admin_id = '".$admin_id."'";
       $this->sql = $this->GetSelectSql($val, $tbl, $where);

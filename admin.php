@@ -48,7 +48,9 @@
     /*****************************/
     if(isset($_POST['btn_insert']))
     {
-      //新規登録チェック
+      /*****************************/
+      //  新規登録チェック
+      /*****************************/
       $view->msg = $dc->AdminCheck($admin_id_, $admin_pass_word_);
       if(strlen($view->msg) > 0)
       {//エラーあり
@@ -58,27 +60,21 @@
         return;
       }
       
-      //管理者テーブル追加
+      /*****************************/
+      //  DB追加
+      /*****************************/
       $db->admin_id = $admin_id_;
       $db->admin_pass_word = $admin_pass_word_;
       $db->AddAdminInfo();
       
-      //追加したデータ読込み
-      $dt = $db->GetAdminInfo($admin_id_);
-      $comment_bk_color = '';
-      $comment_viewbk_color = '';
-      $limitpageline = '';
-      foreach ($dt as $dr)
-      {
-        $comment_bk_color = $dr['comment_bk_color'];
-        $comment_viewbk_color = $dr['comment_viewbk_color'];
-        $limitpageline = $dr['limitpageline'];
-      }
-
-      //セッション変数定義
-      $item = array('admin_id'=>$admin_id_, 'admin_pass_word'=>$admin_pass_word_, 'comment_bk_color'=>$comment_bk_color, 'comment_viewbk_color'=>$comment_viewbk_color, 'limitpageline'=> $limitpageline);
-      $dc->SetSession($item);
+      /*****************************/
+      //  セッション変数設定
+      /*****************************/
+      $dc->SetSession(SetDataToSessionItem($db->GetAdminInfo($admin_id_)));
       
+      /*****************************/
+      //  追加確認画面表示
+      /*****************************/
       $view->pagetitle = $view->pagetitlearray['insert'];
       $view->msg = $view->msgarray['ok'];
       $view->urlfile = $view->urlarray['admin'];
@@ -86,14 +82,13 @@
       $view->contents = $view->htmlMessage();
       echo $view->htmlView();
       return;
-      break;
     }
  
     /*****************************/
     //  管理者ＩＤ認証チェック
     /*****************************/
     if(isset($_POST['btn_check']))
-    {//認証チェック
+    {
       $view->msg = $dc->AdminCheck($admin_id_, $admin_pass_word_, 'check');
       if(strlen($view->msg) > 0)
       {//エラーあり
@@ -103,20 +98,12 @@
         return;
       }
 
-      //管理者テーブル読込み
+      /*****************************/
+      //  セッション変数設定
+      /*****************************/
       $db->admin_id = $admin_id_;
       $db->admin_pass_word = $admin_pass_word_;
-      $dt = $db->GetAdminInfo($admin_id_);
-      foreach ($dt as $dr)
-      {
-        $comment_bk_color = $dr['comment_bk_color'];
-        $comment_viewbk_color = $dr['comment_viewbk_color'];
-        $limitpageline = $dr['limitpageline'];
-      }
-
-      //セッション変数定義
-      $item = array('admin_id'=>$admin_id_, 'admin_pass_word'=>$admin_pass_word_, 'comment_bk_color'=>$comment_bk_color, 'comment_viewbk_color'=>$comment_viewbk_color, 'limitpageline'=> $limitpageline);
-      $dc->SetSession($item);
+      $dc->SetSession(SetDataToSessionItem($db->GetAdminInfo($admin_id_)));
     }
   }
 
@@ -125,25 +112,48 @@
   /*****************************/
   if(isset($_POST['btn_setting']))
   {//カラー設定
-    $comment_bk_color_ = $_POST['comcolor'];
-    $comment_viewbk_color_ = $_POST['viewcolor'];
-    $free_bk_color_ = $_POST['free_comcolor'];
-    $free_viewbk_color_ = $_POST['free_viewcolor'];
+    $board_backcolor_ = CheckColor($_POST['comcolor'], $_POST['free_comcolor']);
+    $comment_backcolor_ = CheckColor($_POST['viewcolor'], $_POST['free_viewcolor']);
+    $body_backcolor_ = CheckColor($_POST['bodycolor'], $_POST['free_body_color']);
+    $subcomment_backcolor_ = CheckColor($_POST['subcolor'], $_POST['free_subgroup_color']);
+    $commentboard_backcolor_ = CheckColor($_POST['maincolor'], $_POST['free_main_bk_color']);
+    $titel_backcolor_ = CheckColor($_POST['titelcolor'], $_POST['free_titel_bk_color']);
+    
+    /*****************************/
+    //  データ入力チェック
+    /*****************************/
     $limitpageline_ = $_POST['limitpageline'];
-    
-    //DB更新
-    $bk_color = 0 < strlen($comment_bk_color_) ? $comment_bk_color_ : $free_bk_color_;
-    $viewbk_color = 0 < strlen($comment_viewbk_color_) ? $comment_viewbk_color_ : $free_viewbk_color_;
-    $db->comment_bk_color = $bk_color;
-    $db->comment_viewbk_color = $viewbk_color;
-    $db->limitpageline = $limitpageline_;
-    $db->EditAdminInfo($_SESSION['admin_id']);
 
-    //セッション変数定義
-    $item = array('comment_bk_color'=>$bk_color, 'comment_viewbk_color'=>$viewbk_color, 'limitpageline'=> $limitpageline_);
-    $dc->SetSession($item);
+    $itemarray = array('limitpageline' => $limitpageline_);
+    $view->msg = $dc->InputDataCheck($itemarray);
+    if(strlen($view->msg) > 0)
+    {//エラーあり
+      $view->pagetitle = $view->htmlSpanRed($view->pagetitlearray['error']);
+      $view->contents = $view->htmlErrMessage();
+      echo $view->htmlView();
+      return;
+    }
+
+    /*****************************/
+    //  DB更新
+    /*****************************/
+    $db->board_backcolor = $board_backcolor_;
+    $db->comment_backcolor = $comment_backcolor_;
+    $db->limitpageline = $limitpageline_;
+    $db->body_backcolor = $body_backcolor_;
+    $db->subcomment_backcolor = $subcomment_backcolor_;
+    $db->commentboard_backcolor = $commentboard_backcolor_;
+    $db->titel_backcolor = $titel_backcolor_;
+    $db->EditAdminInfo($dc->GetSessionAdminID());
+
+    /*****************************/
+    //  セッション変数設定
+    /*****************************/
+    $dc->SetSession(SetDataToSessionItem($db->GetAdminInfo($dc->GetSessionAdminID())));
     
-    //表示
+    /*****************************/
+    //  更新確認画面表示
+    /*****************************/
     $view->pagetitle = $view->pagetitlearray['update'];
     $view->msg = $view->msgarray['ok'];
     $view->urlfile = $view->urlarray['admin'];
@@ -173,13 +183,48 @@
     $session_data = $dc->GetSession();
     $view->admin_id = $session_data['admin_id'];
     $view->limitpageline = $session_data['limitpageline'];
-    $view->comment_bk_color = $session_data['comment_bk_color'];
-    $view->comment_viewbk_color = $session_data['comment_viewbk_color'];
+    $view->board_backcolor = $session_data['board_backcolor'];
+    $view->comment_backcolor = $session_data['comment_backcolor'];
+    $view->body_backcolor = $session_data['body_backcolor'];
+    $view->subcomment_backcolor = $session_data['subcomment_backcolor'];
+    $view->commentboard_backcolor = $session_data['commentboard_backcolor'];
+    $view->titel_backcolor = $session_data['titel_backcolor'];
     
     $view->pagetitle = $view->pagetitlearray['adminsetting'];
     $view->contents = $view->htmlAdminSetting();
     echo $view->htmlView();
     return;
+  }
+
+  /*****************************/
+  //  セッション変数設定
+  /*****************************/
+  function SetDataToSessionItem($dt)
+  {
+    $item = '';
+    foreach ($dt as $dr)
+    {
+      $item = array(
+        'admin_id'=>$dr['admin_id'],
+        'admin_pass_word'=>$dr['admin_pass_word'],
+        'board_backcolor'=>$dr['board_backcolor'],
+        'comment_backcolor'=>$dr['comment_backcolor'],
+        'limitpageline'=>$dr['limitpageline'],
+        'body_backcolor'=>$dr['body_backcolor'],
+        'subcomment_backcolor'=>$dr['subcomment_backcolor'],
+        'commentboard_backcolor'=>$dr['commentboard_backcolor'],
+        'titel_backcolor'=>$dr['titel_backcolor']
+        );
+    }
+    return $item;
+  }
+  
+  /*****************************/
+  //  入力カラー設定
+  /*****************************/
+  function CheckColor($color, $free)
+  {
+    return 0 < strlen($color) ? $color : $free;
   }
 
 ?>

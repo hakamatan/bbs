@@ -13,7 +13,8 @@ class DataCheckClass
         'comment'=>'メッセージ',
         'pass_word'=>'更新・削除キー',
         'admin_id'=>'管理者ＩＤ',
-        'admin_pass_word' =>'パスワード'
+        'admin_pass_word' =>'パスワード',
+        'limitpageline' =>'１頁表示件数'
         );
 
   /******************************/
@@ -48,7 +49,10 @@ class DataCheckClass
           $ret.= $this->LengthCheck($value, $this->itemnamearray[$key], 4);
           $ret.= $this->AlphaNumeralCheck($value, $this->itemnamearray[$key]);
           break;
-
+        case 'limitpageline';
+          $ret.= $this->EmptyCheck($value, $this->itemnamearray[$key]);
+          $ret.= $this->NumeralCheck1($value, $this->itemnamearray[$key]);
+          break;
         default:
           break;
       }
@@ -91,6 +95,19 @@ class DataCheckClass
     if (!preg_match("/^[a-zA-Z0-9]+$/",$item))
     {
       return sprintf("%s は 半角英数字で入力してください。<br>", $itemname);
+    }
+    return $ret;
+  }
+
+  /******************************/
+  //  数字チェック
+  /******************************/
+  function NumeralCheck1($item, $itemname)
+  {
+    $ret='';
+    if (!is_numeric($item) || 1 >= $item)
+    {
+      return sprintf("%s は １以上の数字で入力してください。<br>", $itemname);
     }
     return $ret;
   }
@@ -183,7 +200,7 @@ class DataCheckClass
     session_cache_limiter('private, must-revalidate');
     session_start();
   }
-
+  
   /*****************************/
   //  セッション破棄
   /*****************************/
@@ -209,6 +226,16 @@ class DataCheckClass
   }
 
   /*****************************/
+  //  頁表示初期値取得
+  /*****************************/
+  function GetPageInitialeVlaue(&$startrow, &$allpage, &$allcount)
+  {
+    $startrow = 0;  //表示開始レコード
+    $allpage = 1;  //全ページ
+    $allcount = 0;  //全件数
+  }
+
+  /*****************************/
   //  １頁表示件数取得
   /*****************************/
   function GetPageLimit()
@@ -218,20 +245,41 @@ class DataCheckClass
   }
 
   /*****************************/
+  //  全データ件数取得
+  /*****************************/
+  function GetAllDataCount($dt)
+  {
+    foreach ($dt as $dr)
+    {
+      return $dr['count'];
+   	}
+  }
+
+  /*****************************/
   //  カラー取得
   /*****************************/
-  function GetColor()
+  function GetColor(&$item)
   {
-/*    if($this->CheckLogin())
+    print '(GetColor)<br>';
+    if($this->CheckLogin())
     {
-      $ret = array($_SESSION['comment_bk_color'], $_SESSION['comment_viewbk_color']);
-    } 
+      $session = $this->GetSession();
+      $item['board_backcolor'] = $session['board_backcolor'];
+      $item['comment_backcolor'] = $session['comment_backcolor'];
+      $item['subcomment_backcolor'] = $session['subcomment_backcolor'];
+      $item['body_backcolor'] = $session['body_backcolor'];
+      $item['commentboard_backcolor'] = $session['commentboard_backcolor'];
+      $item['titel_backcolor'] = $session['titel_backcolor'];
+    }
     else
     {
-      $ret  = null;
-    }*/
-    $ret = $this->CheckLogin() ? array($_SESSION['comment_bk_color'], $_SESSION['comment_viewbk_color']) : null;
-    return $ret;
+      $item['board_backcolor'] = '#40e0d0';
+      $item['comment_backcolor'] = '#b0e0e6';
+      $item['subcomment_backcolor'] = '#add8e6';
+      $item['body_backcolor'] = '#ffffff';
+      $item['commentboard_backcolor'] = '#48d1cc';
+      $item['titel_backcolor'] = '#1e90ff';
+    }
  }
 
   /*****************************/
@@ -252,11 +300,23 @@ class DataCheckClass
         case 'limitpageline';
           $_SESSION['limitpageline'] = $value;
           break;
-        case 'comment_bk_color';
-          $_SESSION['comment_bk_color'] = $value;
+        case 'board_backcolor';
+          $_SESSION['board_backcolor'] = $value;
           break;
-        case 'comment_viewbk_color';
-          $_SESSION['comment_viewbk_color'] = $value;
+        case 'comment_backcolor';
+          $_SESSION['comment_backcolor'] = $value;
+          break;
+        case 'body_backcolor';
+          $_SESSION['body_backcolor'] = $value;
+          break;
+        case 'subcomment_backcolor';
+          $_SESSION['subcomment_backcolor'] = $value;
+          break;
+        case 'commentboard_backcolor';
+          $_SESSION['commentboard_backcolor'] = $value;
+          break;
+        case 'titel_backcolor';
+          $_SESSION['titel_backcolor'] = $value;
           break;
 
         default:
@@ -270,8 +330,26 @@ class DataCheckClass
   /*****************************/
   function GetSession()
   {
-    $data =  array('admin_id'=>$_SESSION['admin_id'], 'admin_pass_word'=>$_SESSION['admin_pass_word'], 'limitpageline'=>$_SESSION['limitpageline'], 'comment_bk_color'=> $_SESSION['comment_bk_color'], 'comment_viewbk_color'=>$_SESSION['comment_viewbk_color']);
+    $data =  array(
+              'admin_id'=>$_SESSION['admin_id'], 
+              'admin_pass_word'=>$_SESSION['admin_pass_word'], 
+              'limitpageline'=>$_SESSION['limitpageline'], 
+              'board_backcolor'=> $_SESSION['board_backcolor'], 
+              'comment_backcolor'=>$_SESSION['comment_backcolor'],
+              'body_backcolor'=>$_SESSION['body_backcolor'],
+              'subcomment_backcolor'=>$_SESSION['subcomment_backcolor'],
+              'commentboard_backcolor'=>$_SESSION['commentboard_backcolor'],
+              'titel_backcolor'=>$_SESSION['titel_backcolor']
+              );
     return $data;
+  }
+
+  /*****************************/
+  //  セッション管理者ID取得
+  /*****************************/
+  function GetSessionAdminID()
+  {
+    return $_SESSION['admin_id']; 
   }
 }
 ?>

@@ -30,9 +30,7 @@
   /*****************************/
   //  ページリンク作成
   /*****************************/
-  $startrow = 0;  //表示開始レコード
-  $allpage_ = 1;  //全ページ
-  $allcount = 0;  //全件数
+  $dc->GetPageInitialeVlaue($startrow, $allpage_, $allcount);//表示開始レコード//全ページ//全件数
 
   $pagelimit = $dc->GetPagelimit();
   $startrow = $dc->GetStartRow($page_, $pagelimit);
@@ -75,10 +73,7 @@
   $contents .= $view->htmlGroupView('search');
 
   //  全件データ件数取得
-  foreach ($dt[1] as $dr)
-  {
-    $allcount = $dr['count'];
- 	}
+  $allcount = $dc->GetAllDataCount($dt[1]);
   $view->alldata = $allcount;
 
   /*****************************/
