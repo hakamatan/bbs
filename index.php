@@ -6,7 +6,6 @@
   require_once('ViewClass.php');
   require_once('DataCheckClass.php');
 
-  $contents = '';
   $view = new ViewClass();
   $db = new DBClass();
   $dc = new DataCheckClass();
@@ -27,7 +26,7 @@
   //  コメント検索入力部作成
   /*****************************/
   $view->urlfile = sprintf($view->urlarray['search'],'','','');
-  $contents .= $view->htmlWordSearch();
+  $contents = $view->htmlWordSearch();
 
   /*****************************/
   //  コメント入力部作成

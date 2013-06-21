@@ -277,7 +277,7 @@ class DBClass
       $val = ":admin_id, :admin_pass_word";
       $this->sql = $this->GetInsertSql("user", $item, $val);
       //print printf("(AddAdminInfo) admin_id' => %s, 'admin_pass_word' => %s <br>",$this->admin_id, $this->admin_pass_word);
-      $this->sql_param = array('admin_id' => $this->admin_id, 'admin_pass_word' => $this->admin_pass_word);
+      $this->sql_param = array('admin_id' => $this->admin_id, 'admin_pass_word' => sha1($this->admin_pass_word));
       $this->InsertData();
 
       $this->DbClose();
@@ -514,9 +514,6 @@ class DBClass
       //print '(GetCommentView=>)'.$this->sql.';<br>';
       $ret = $this->SelectData();
 
-//      $this->sql = "select FOUND_ROWS() as count";
-////      print '(GetTitleViewNumber)'.$this->sql.';<br>';
-//      $retall = $this->SelectData();
       $retall = $this->GetAllDataCount();
 
       $this->DbClose();

@@ -20,6 +20,7 @@
   {
     //データ破棄
     $dc->SessionDestroy();
+    header("Location: admin.php"); 
   }
 
   /*****************************/
@@ -104,6 +105,10 @@
       $db->admin_id = $admin_id_;
       $db->admin_pass_word = $admin_pass_word_;
       $dc->SetSession(SetDataToSessionItem($db->GetAdminInfo($admin_id_)));
+      $dc->SetCookie($admin_id_);
+//      $urlfile = $_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+//      header('"Location: '.$urlfile.'"'); 
+      header("Location: admin.php"); 
     }
   }
 
@@ -165,21 +170,17 @@
   }
 
   /*****************************/
-  //  ログアウト時の表示
+  //  表示
   /*****************************/
   if(!$dc->CheckLogin())
-  {//ログイン画面
+  {// ログアウト時の表示：ログイン画面
     $view->pagetitle = $view->pagetitlearray['adminlogin'];
     $view->contents = $view->htmlAdminCheck();
     echo $view->htmlView();
     return;
   }
-
-  /*****************************/
-  //  ログイン時の表示
-  /*****************************/
-  if($dc->CheckLogin())
-  {//設定画面
+  else
+  {//ログイン時の表示：設定画面
     $session_data = $dc->GetSession();
     $view->admin_id = $session_data['admin_id'];
     $view->limitpageline = $session_data['limitpageline'];

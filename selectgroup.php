@@ -54,7 +54,7 @@
     /*****************************/
     //  更新・削除キーチェック
     /*****************************/
-    $view->msg = $dc->Pass_WordCheck($pass_word_, $comment_id_);
+    $view->msg = $dc->UpDelKeyCheck($pass_word_, $comment_id_);
     if(strlen($view->msg) > 0)
     {//エラー
       $view->pagetitle = $view->htmlSpanRed($view->pagetitlearray['error']);

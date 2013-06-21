@@ -18,12 +18,12 @@
   }
   else
   {
-     $bk_color = '#40e0d0';
-     $viewbk_color = '#b0e0e6';
-     $subgroup_color = '#add8e6';
-     $body_color = '#ffffff';
-     $main_bk_color = '#48d1cc';
-     $title_color = '#1e90ff';
+     $bk_color = '#f0e68c';
+     $viewbk_color = '#8fbc8f';
+     $subgroup_color = '#b0e0e6';
+     $body_color = '#dcdcdc';
+     $main_bk_color = '#fafad2';
+     $title_color = '#bdb76b';
   }
   
 /*  require_once('DataCheckClass.php');
@@ -128,12 +128,11 @@ body {
 }
 .group1 {
   word-wrap:break-word;
-  width:590px;
+  width:580px;
   margin-right:auto;
   margin-left:10px;  
   background-color:<?php echo $subgroup_color ?>;
-  padding-top:5px;
-  padding-bottom:5px;
+  padding:5px;
   border-top: 1px solid #000000;
   clear:both;
 }
@@ -155,7 +154,7 @@ body {
   margin-top:10px;
   margin-bottom:10px;;  
   margin-right:auto;
-  margin-left:auto;  
+  margin-left:auto;
   background-color:<?php echo $viewbk_color ?>;
   padding5px;
 }

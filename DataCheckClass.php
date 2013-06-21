@@ -115,7 +115,7 @@ class DataCheckClass
   /******************************/
   //  更新・削除キー認証チェック
   /******************************/
-  function Pass_WordCheck($pass_word, $comment_id)
+  function UpDelKeyCheck($pass_word, $comment_id)
   {
     $db = new DBClass();
     $dt = $db->GetComment($comment_id);
@@ -152,7 +152,7 @@ class DataCheckClass
       {
         return '管理者ＩＤが存在しません。'.'<br>';
       }
-      if($admin_pass_word != $dr_admin_pass_word)
+      if(sha1($admin_pass_word) != $dr_admin_pass_word)
       {
         return 'パスワードが違います。'.'<br>';
       }
@@ -206,16 +206,44 @@ class DataCheckClass
   /*****************************/
   function SessionDestroy()
   {
+    // セッション変数を全て解除する
     $_SESSION = array();
+    // セッションを切断するにはセッションクッキーも削除する。
+    // Note: セッション情報だけでなくセッションを破壊する。
+    if (isset($_COOKIE[session_name()]))
+    {
+      setcookie(session_name(), '', time()-42000, '/');
+    }
+    // 最終的に、セッションを破壊する
     session_destroy();
+    
+    setcookie('admin_id', '', time()-4200);
   }
-
+  
+  /*****************************/
+  //  クッキーセット
+  /*****************************/
+  function SetCookie($admin_id)
+  {
+    setcookie('admin_id', $admin_id, time()+180);
+    print '(SetCookie)'. $admin_id.';';
+    print '(SetCookie)'. $_COOKIE['admin_id'].';';
+  }
   /*****************************/
   //  ログインチェック
   /*****************************/
   function CheckLogin()
   {
-    if(isset($_SESSION['admin_id']) && isset($_SESSION['admin_pass_word']))
+/*    if(isset($_SESSION['admin_id']) && isset($_SESSION['admin_pass_word']))
+    {
+      return true;
+    }
+    else
+    {
+      return false;
+    }*/
+    print sprintf("(c)admin_id=%s, (s)admin_id=%s, admin_pass_word=%s <br>", $_COOKIE['admin_id'], $_SESSION['admin_id'], $_SESSION['admin_pass_word']);
+    if(isset($_COOKIE['admin_id']) || (isset($_SESSION['admin_id']) && isset($_SESSION['admin_pass_word'])))
     {
       return true;
     }
@@ -223,6 +251,7 @@ class DataCheckClass
     {
       return false;
     }
+    
   }
 
   /*****************************/
