@@ -102,6 +102,12 @@ body {
   padding-bottom: 5px;
   background-color:<?php echo $main_bk_color ?>;
 }
+
+.comment {
+  word-wrap:break-word;
+  text-align:left;
+}
+
 .group10 {
   word-wrap:break-word;
   width:600px;
@@ -144,9 +150,6 @@ body {
   font-weight:bold;
   text-align:left;
   color:#8B008B;
-}
-.comment {
-  text-align:left;
 }
 .group2 {
   word-wrap:break-word;
@@ -216,17 +219,17 @@ body {
   border: 1px solid #000000;
   padding:3px;
   word-wrap:break-word;
-
+  text-align:left;
 }
 #newdatacheck th{
   text-align:left;
   word-wrap:break-word;
 }
 
-#newdatacheck td{
+/*#newdatacheck td{
   text-align:left;
   word-wrap:break-word;
-}
+}*/
 
 #newdatacheck td.right{
   text-align:right;
@@ -234,19 +237,22 @@ body {
   word-wrap:break-word;
 }
 
-.button0{
+#button0{
   width:120px;
   /*margin-right:auto;*/
-  margin-left:470px; 
+  margin-left:470px;
+  clear:both;
 }
-.button1{
+#button1{
   width:120px;
   /*margin-right:auto;*/
   margin-left:460px;  
+  clear:both;
 }
 .btn1{
   float:left;
 }
+
 .pass_word {
   ime-mode:inactive;
 }
@@ -260,5 +266,15 @@ body {
 
 #adminsetting th {
   text-align:left;
+}
+
+.comment {
+  float:left;
+  background-color:#fgfgfg;
+}
+
+.imagefile {
+  float:right;
+  background-color:#9999dc;
 }
 

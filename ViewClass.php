@@ -5,6 +5,22 @@
 class ViewClass
 {
   /****************************/
+  //  パス
+  /****************************/
+  public static $patharray = array(
+        'tmp'=>'tmp/',
+        'image'=>'images/'
+        );
+
+  /****************************/
+  //  サイズ
+  /****************************/
+  public static $sizearray = array(
+        'height'=>100,
+        'width'=>150
+        );
+
+  /****************************/
   //  ページタイトル
   /****************************/
   public $pagetitlearray = array(
@@ -22,7 +38,7 @@ class ViewClass
         'group'=>'グループ表示',
         'search'=>'検索結果'
         );
-  
+
   /****************************/
   //  ファイル
   /****************************/
@@ -73,7 +89,9 @@ class ViewClass
   public $allpage;      //全ページ数
   public $startrow;     //開始行
   public $lastrow;      //終了行
-
+  public $imagefile;    //イメージファイル
+  public $width;        //イメージファイル横幅
+  public $height;       //イメージファイル縦幅
   /***************************/
   //  コンストラクタ
   /***************************/
@@ -205,6 +223,7 @@ class ViewClass
     $this->title = $title;
     $this->comment = '';
     $this->pass_word = '';
+    $this->imagefile = '';
 
     return $this->htmlCommentInput();
   }
@@ -223,11 +242,12 @@ class ViewClass
     return
     '<!--(3:コメント入力 START)-->
         <div class="group0">
-          <form action="'.$this->urlfile.'" method="post">
+          <form enctype="multipart/form-data" action="'.$this->urlfile.'" method="post">
             <table id="newdata">
             <tr><th>名前</th><td><input class="jpn" size="51" type="text" name="handlename" value="'.$this->handlename.'"></td></tr>
             <tr><th>タイトル</th><td><input class="jpn" size="51" type="text" name="title" value="'.$this->title.'"></td></tr>
             <tr><th class="top">メッセージ</th><td><textarea class="jpn" rows="7" cols="52" name="comment">'.$this->comment.'</textarea></td></tr>
+            <tr><th>イメージファイル</th><td><input size="51" type="file" name="imagefile"></td></tr>
             <tr><th>更新・削除キー</th><td><input class="pass_word" maxlength="4" size="11" type="text" name="pass_word" value="'.$this->pass_word.'">
                 &nbsp;<span class="small">４桁の英数字</span></td></tr>
             <tr><th></th><td class="right"><input type="submit" name="btn_insertchk" value="  確認  ">
@@ -334,6 +354,7 @@ class ViewClass
   /***************************/
   function htmlCommentCheck()
   {
+//                              <input type="button" value="  戻る   " onclick="history.back();"></td></tr>
     $ret = 
     '<!--(4:コメント確認 START)-->
         <div class="group0">
@@ -341,15 +362,16 @@ class ViewClass
             <table id="newdatacheck">
             <tr><th>名前</th><td>'.$this->handlename.'</td></tr>
             <tr><th>タイトル</th><td>'.$this->title.'</td></tr>
-            <tr><th>メッセージ</th><td>'.nl2br($this->comment).'</td></tr>
+            <tr><th>メッセージ</th><td><img src="'.$this->imagefile.'" alt="" align="right" width="'.$this->width.'" height="'.$this->height.'" >'.nl2br($this->comment).'</td></tr>
             <tr><th>更新・削除キー</th><td>'.$this->pass_word.'</td></tr>
             <tr><th></th><td class="right"><input type="submit" name="btn_insert" value="  書込み  ">
-                              <input type="button" value="  戻る   " onclick="history.back();"></td></tr>
+                              <input type="submit" name="btn_cancel" value="  やめる   "></td></tr>
             </table>
             <input type="hidden" name="handlename" value="'.$this->handlename.'">
             <input type="hidden" name="title" value="'.$this->title.'">
             <input type="hidden" name="comment" value="'.$this->comment.'">
             <input type="hidden" name="pass_word" value="'.$this->pass_word.'">
+            <input type="hidden" name="imagefile" value="'.$this->imagefile.'">
           </form>
         </div>
     <!--(4:コメント確認 END)-->';
@@ -386,7 +408,7 @@ class ViewClass
         <div class="group0">'.
           $this->htmlGroupViewComment().'
           <right><!--btn:start-->
-            <div class="button0">';
+            <div id="button0">';
         $ret .= ($search != '') ? $this->htmlCommentSearch() : $this->htmlGroupViewButton();
         $ret .= '
             </div>
@@ -403,7 +425,7 @@ class ViewClass
                 <div class="group1">'.
                 $this->htmlGroupViewComment().'
                 <right><!--btn:start-->
-                  <div class="button1">'.
+                  <div id="button1">'.
                   $this->htmlGroupViewButton().'
                   </div>
                 </right><!--btn:end-->
@@ -436,6 +458,13 @@ class ViewClass
     $this->comment = $dr['comment'];
     $this->up_date = $dr['up_date'];
     $this->urlfile = sprintf($this->urlarray['grp_edit'], $this->board_id, $this->comment_id, $cnt, $this->page);
+//    if(!is_null($dr['img']))
+    if(0 < strlen($dr['img']))
+    {
+      $this->imagefile = self::$patharray['image'].$dr['img'];
+      $dc = new DataCheckClass();
+      $dc->GetImageSize($this->imagefile, $this->width, $this->height);
+    }
   }
   
   /***************************/
@@ -451,7 +480,10 @@ class ViewClass
     return '
       <div class="title_name">'.$this->title.'  ---  '.$this->handlename.'</div>
       <div class="time">'.$this->up_date.'</div>
-      <div class="comment">'.nl2br($this->comment).'</div>';
+      <div class="com_group">
+      <div class="comment">'.nl2br($this->comment).'</div>
+      <div class="imagefile"><img src="'.$this->imagefile.'" alt="" width="'.$this->width.'" height="'.$this->height.'" ></div>
+      </div>';
   }
 
   /***************************/

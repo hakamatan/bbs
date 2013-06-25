@@ -33,23 +33,23 @@ class DataCheckClass
         case 'title':
           $ret.= $this->EmptyCheck($value, $this->itemnamearray[$key]);
           break;
-        case 'comment';
+        case 'comment':
           $ret.= $this->EmptyCheck($value, $this->itemnamearray[$key]);
           break;
-        case 'pass_word';
-          $ret.= $this->EmptyCheck($value, $this->itemnamearray[$key]);
-          $ret.= $this->LengthCheck($value, $this->itemnamearray[$key], 4);
-          $ret.= $this->AlphaNumeralCheck($value, $this->itemnamearray[$key]);
-          break;
-        case 'admin_id';
-          $ret.= $this->EmptyCheck($value, $this->itemnamearray[$key]);
-          break;
-        case 'admin_pass_word';
+        case 'pass_word':
           $ret.= $this->EmptyCheck($value, $this->itemnamearray[$key]);
           $ret.= $this->LengthCheck($value, $this->itemnamearray[$key], 4);
           $ret.= $this->AlphaNumeralCheck($value, $this->itemnamearray[$key]);
           break;
-        case 'limitpageline';
+        case 'admin_id':
+          $ret.= $this->EmptyCheck($value, $this->itemnamearray[$key]);
+          break;
+        case 'admin_pass_word':
+          $ret.= $this->EmptyCheck($value, $this->itemnamearray[$key]);
+          $ret.= $this->LengthCheck($value, $this->itemnamearray[$key], 4);
+          $ret.= $this->AlphaNumeralCheck($value, $this->itemnamearray[$key]);
+          break;
+        case 'limitpageline':
           $ret.= $this->EmptyCheck($value, $this->itemnamearray[$key]);
           $ret.= $this->NumeralCheck1($value, $this->itemnamearray[$key]);
           break;
@@ -226,25 +226,20 @@ class DataCheckClass
   function SetCookie($admin_id)
   {
     setcookie('admin_id', $admin_id, time()+180);
-    print '(SetCookie)'. $admin_id.';';
-    print '(SetCookie)'. $_COOKIE['admin_id'].';';
   }
   /*****************************/
   //  ログインチェック
   /*****************************/
   function CheckLogin()
   {
-/*    if(isset($_SESSION['admin_id']) && isset($_SESSION['admin_pass_word']))
-    {
-      return true;
-    }
-    else
-    {
-      return false;
-    }*/
-    print sprintf("(c)admin_id=%s, (s)admin_id=%s, admin_pass_word=%s <br>", $_COOKIE['admin_id'], $_SESSION['admin_id'], $_SESSION['admin_pass_word']);
+//    print sprintf("(c)admin_id=%s, (s)admin_id=%s, admin_pass_word=%s <br>", $_COOKIE['admin_id'], $_SESSION['admin_id'], $_SESSION['admin_pass_word']);
     if(isset($_COOKIE['admin_id']) || (isset($_SESSION['admin_id']) && isset($_SESSION['admin_pass_word'])))
     {
+      if(!isset($_SESSION['admin_id']) || !isset($_SESSION['admin_pass_word']))
+      {
+        $db = new DBClass();
+        $this->SetSession($this->SetDataToSessionItem($db->GetAdminInfo($this->GetSessionAdminID())));
+      }
       return true;
     }
     else
@@ -254,6 +249,29 @@ class DataCheckClass
     
   }
 
+  /*****************************/
+  //  セッション変数設定
+  /*****************************/
+  function SetDataToSessionItem($dt)
+  {
+    $item = '';
+    foreach ($dt as $dr)
+    {
+      $item = array(
+        'admin_id'=>$dr['admin_id'],
+        'admin_pass_word'=>$dr['admin_pass_word'],
+        'board_backcolor'=>$dr['board_backcolor'],
+        'comment_backcolor'=>$dr['comment_backcolor'],
+        'limitpageline'=>$dr['limitpageline'],
+        'body_backcolor'=>$dr['body_backcolor'],
+        'subcomment_backcolor'=>$dr['subcomment_backcolor'],
+        'commentboard_backcolor'=>$dr['commentboard_backcolor'],
+        'titel_backcolor'=>$dr['titel_backcolor']
+        );
+    }
+    return $item;
+  }
+  
   /*****************************/
   //  頁表示初期値取得
   /*****************************/
@@ -289,7 +307,7 @@ class DataCheckClass
   /*****************************/
   function GetColor(&$item)
   {
-    print '(GetColor)<br>';
+    //print '(GetColor)<br>';
     if($this->CheckLogin())
     {
       $session = $this->GetSession();
@@ -378,7 +396,152 @@ class DataCheckClass
   /*****************************/
   function GetSessionAdminID()
   {
-    return $_SESSION['admin_id']; 
+    return isset($_SESSION['admin_id']) ? $_SESSION['admin_id'] : $_COOKIE['admin_id']; 
   }
-}
+  
+  /******************************/
+  //  添付ファイルチェック
+  /******************************/
+  function InputImgDataCheck($item,&$tmp)
+  {
+    $ret='';
+    $fileext= null;
+    $uploadedfile = null;
+    $tmp='';
+    foreach ($item as $key => $value)
+    {
+      switch ($key)
+      {
+        case 'imagefile':
+          $uploadedfile = $value;
+          $imginfo = getimagesize($value);
+          if($imginfo[2] != IMAGETYPE_JPEG && $imginfo[2] != IMAGETYPE_GIF && $imginfo[2] != IMAGETYPE_PNG )
+          {
+            $ret.= 'JPG,PNG,GIF以外のファイル形式は添付できません。';
+          }
+          break;
+        case 'imagefile_name':
+          //$fileinfo = pathinfo($value);
+          $fileext = strtolower(pathinfo($value)['extension']);
+          break;
+        case 'imagefile_size':
+          if(1000000<$value)
+          {
+            $ret.= 'ファイルのサイズが大きすぎます。1MB以下にしてください。';
+          }
+          break;
+        case 'imagefile_err':
+          break;
+        default:
+          break;
+      }
+    }
+    
+    if(0==strlen($ret))
+    {//エラーが無いとき一時フォルダに名前を変えて保存
+      $mictime = microtime();
+      $imagefile = substr($mictime,11).substr($mictime, 2, 6).'.'.$fileext;
+      $path = ViewClass::$patharray['tmp'];
+      if(!move_uploaded_file($uploadedfile, "$path$imagefile"))
+      {
+        $ret = 'イメージファイルのアップロードに失敗しました。';
+        @unlink($uploadedfile);
+        @unlink("$path$imagefile");
+      }
+      $tmp = "$path$imagefile";
+    }
+    return $ret;
+  }
+  
+  /******************************/
+  //  添付縮小
+  /******************************/
+  function Zoomout($img, &$new_width, &$new_height)
+  {
+    list($width, $height, $type, $attr) = getimagesize($img);
+    switch ($type)
+    {//タイプ別
+      case IMAGETYPE_JPEG:
+        $image = ImageCreateFromJPEG($img); //JPEGファイルを読み込む
+        break;
+      case IMAGETYPE_GIF:
+        $image = ImageCreateFromGIF($img); //GIF画像を読み込む
+        break;
+      case IMAGETYPE_PNG:
+        $image = ImageCreateFromPNG($img); //PNG画像を読み込む場合
+        break;
+      default:
+        break;
+    }
+    //回転する場合は、下記のようにする　引数は、画像、角度、回転後にカバーされない部分に利用される背景色
+    //$image = imagerotate($image, 90, 0);
+
+    //縮小サイズ決定
+    $new_width = ViewClass::$sizearray['width'];
+    $rate = $new_width / $width; //圧縮比を求める
+    $new_height = $rate * $height;
+
+    // 空の画像を作成する。
+    $new_image = ImageCreateTrueColor($new_width, $new_height);
+ 
+    //リサイズ サンプリングしなおす場合。(ImageCopyResizedよりこっちの方が綺麗みたい)
+    ImageCopyResampled($new_image,$image,0,0,0,0,$new_width,$new_height,$width,$height);
+
+    //ファイル保存(数値は品質)
+    switch ($type)
+    {//タイプ別
+      case IMAGETYPE_JPEG:
+        ImageJPEG($new_image, $img, 70);
+        break;
+      case IMAGETYPE_GIF:
+        ImageGIF($new_image, $img, 70);
+        break;
+      case IMAGETYPE_PNG:
+        ImagePNG($new_image, $img, 70);
+        break;
+      default:
+        break;
+    }
+
+    //後処理 メモリ解放
+    ImageDestroy($image);
+    ImageDestroy($new_image);
+
+  }
+  
+  /******************************/
+  //  ファイル名取得
+  /******************************/
+  function GetFileName($tmpfile)
+  {
+    return str_replace(ViewClass::$patharray['tmp'], '', $tmpfile);
+  }
+  
+  /******************************/
+  //  イメージファイル移動
+  /******************************/
+  function RenameImageFile($name)
+  {
+    $oldpath = ViewClass::$patharray['tmp'];
+    $newpath = ViewClass::$patharray['image'];
+    rename ("$oldpath$name", "$newpath$name");
+  }
+    
+  /******************************/
+  //  画像ファイルサイズ取得
+  /******************************/
+  function GetImageSize($img, &$width, &$height)
+  {
+    list($width, $height, $type, $attr) = getimagesize($img);
+  }
+    
+  /******************************/
+  //  添付画像ファイル削除
+  /******************************/
+  function DeleteTmpImg($img)
+  {
+     unlink($img);
+  }
+
+}//class end
 ?>

@@ -20,7 +20,7 @@
   {
     //データ破棄
     $dc->SessionDestroy();
-    header("Location: admin.php"); 
+    header('Location: '.$vew->urlarray['admin']); 
   }
 
   /*****************************/
@@ -71,7 +71,8 @@
       /*****************************/
       //  セッション変数設定
       /*****************************/
-      $dc->SetSession(SetDataToSessionItem($db->GetAdminInfo($admin_id_)));
+      $dc->SetSession($dc->SetDataToSessionItem($db->GetAdminInfo($admin_id_)));
+      $dc->SetCookie($admin_id_);
       
       /*****************************/
       //  追加確認画面表示
@@ -104,11 +105,9 @@
       /*****************************/
       $db->admin_id = $admin_id_;
       $db->admin_pass_word = $admin_pass_word_;
-      $dc->SetSession(SetDataToSessionItem($db->GetAdminInfo($admin_id_)));
+      $dc->SetSession($dc->SetDataToSessionItem($db->GetAdminInfo($admin_id_)));
       $dc->SetCookie($admin_id_);
-//      $urlfile = $_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
-//      header('"Location: '.$urlfile.'"'); 
-      header("Location: admin.php"); 
+      header('Location: '.$vew->urlarray['admin']); 
     }
   }
 
@@ -154,7 +153,7 @@
     /*****************************/
     //  セッション変数設定
     /*****************************/
-    $dc->SetSession(SetDataToSessionItem($db->GetAdminInfo($dc->GetSessionAdminID())));
+    $dc->SetSession($dc->SetDataToSessionItem($db->GetAdminInfo($dc->GetSessionAdminID())));
     
     /*****************************/
     //  更新確認画面表示
@@ -195,29 +194,6 @@
     $view->contents = $view->htmlAdminSetting();
     echo $view->htmlView();
     return;
-  }
-
-  /*****************************/
-  //  セッション変数設定
-  /*****************************/
-  function SetDataToSessionItem($dt)
-  {
-    $item = '';
-    foreach ($dt as $dr)
-    {
-      $item = array(
-        'admin_id'=>$dr['admin_id'],
-        'admin_pass_word'=>$dr['admin_pass_word'],
-        'board_backcolor'=>$dr['board_backcolor'],
-        'comment_backcolor'=>$dr['comment_backcolor'],
-        'limitpageline'=>$dr['limitpageline'],
-        'body_backcolor'=>$dr['body_backcolor'],
-        'subcomment_backcolor'=>$dr['subcomment_backcolor'],
-        'commentboard_backcolor'=>$dr['commentboard_backcolor'],
-        'titel_backcolor'=>$dr['titel_backcolor']
-        );
-    }
-    return $item;
   }
   
   /*****************************/

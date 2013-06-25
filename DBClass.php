@@ -30,6 +30,7 @@ class DBClass
   public $commentboard_backcolor;
   public $titel_backcolor;
   public $body_backcolor;
+  public $imagefile;
 
   private $sql = '';
   private $sql_param = '';
@@ -223,12 +224,12 @@ class DBClass
 
       // 最後に生成した ID を取得
       $board_id = $this->dbh->lastInsertId();
-
+      
       //コメントデータ追加
-      $item = "board_id, contents, name, pass_word, title";
-      $val = ":board_id, :contents, :handlename, :pass_word, :title";
+      $item = "board_id, contents, name, pass_word, title, img";
+      $val = ":board_id, :contents, :handlename, :pass_word, :title, :img";
       $this->sql = $this->GetInsertSql("comment", $item, $val);
-      $this->sql_param = array('board_id' => $board_id, 'contents' => $this->comment, 'handlename' => $this->handlename, 'pass_word' => $this->pass_word, 'title' => $this->title);
+      $this->sql_param = array('board_id' => $board_id, 'contents' => $this->comment, 'handlename' => $this->handlename, 'pass_word' => $this->pass_word, 'title' => $this->title, 'img' => $this->imagefile);
       $this->InsertData();
 
       $this->DbClose();
@@ -249,10 +250,10 @@ class DBClass
       $this->DBOpen();
       
       //コメントデータ追加
-      $item = "board_id, contents, name, pass_word, title";
-      $val = ":board_id, :contents, :handlename, :pass_word, :title";
+      $item = "board_id, contents, name, pass_word, title, img";
+      $val = ":board_id, :contents, :handlename, :pass_word, :title, :img";
       $this->sql = $this->GetInsertSql("comment", $item, $val);
-      $this->sql_param = array('board_id' => $this->board_id, 'contents' => $this->comment, 'handlename' => $this->handlename, 'pass_word' => $this->pass_word, 'title' => $this->title);
+      $this->sql_param = array('board_id' => $this->board_id, 'contents' => $this->comment, 'handlename' => $this->handlename, 'pass_word' => $this->pass_word, 'title' => $this->title, 'img' => $this->imagefile);
       $this->InsertData();
 
       $this->DbClose();
@@ -296,11 +297,11 @@ class DBClass
     try
     {
       $this->DBOpen();
-      $val = "contents = :contents, name = :handlename, pass_word = :pass_word, title = :title";
+      $val = "contents = :contents, name = :handlename, pass_word = :pass_word, title = :title, img = :img";
       $where = "id = :comment_id";
 
       $this->sql = $this->GetUpdateSql("comment", $val, $where);
-      $this->sql_param = array('comment_id' => $comment_id, 'contents' => $this->comment, 'pass_word' => $this->pass_word, 'title' => $this->title, 'handlename' => $this->handlename,);
+      $this->sql_param = array('comment_id' => $comment_id, 'contents' => $this->comment, 'pass_word' => $this->pass_word, 'title' => $this->title, 'handlename' => $this->handlename, 'img' => $this->imagefile);
       $this->UpdateData();
 
       $this->DbClose();
@@ -433,7 +434,7 @@ class DBClass
       $this->DBOpen();
       
       //親抽出
-      $val = "c.id as comment_id, c.title as title, c.name as handlename, c.created_at as up_date, c.contents as comment, b.created_at as add_date, c.board_id, c.pass_word, min(c.id) as minid";
+      $val = "c.id as comment_id, c.title as title, c.name as handlename, c.created_at as up_date, c.contents as comment, b.created_at as add_date, c.board_id, c.pass_word, min(c.id) as minid, c.img";
       $tbl = "comment as c join board as b on c.board_id = b.id";
       $where = "where c.board_id = ".$board_id." order by c.id";
       $this->sql = $this->GetSelectSql($val, $tbl, $where);
@@ -441,7 +442,7 @@ class DBClass
       $retfirst = $this->SelectData();
       
       //子データ抽出
-      $val = "SQL_CALC_FOUND_ROWS c.id as comment_id, c.title as title, c.name as handlename, c.created_at as up_date, c.contents as comment, b.created_at as add_date, c.board_id, c.pass_word";
+      $val = "SQL_CALC_FOUND_ROWS c.id as comment_id, c.title as title, c.name as handlename, c.created_at as up_date, c.contents as comment, b.created_at as add_date, c.board_id, c.pass_word, c.img";
       $tbl = "comment as c join board as b on c.board_id = b.id";
       $where = "where c.board_id = ".$board_id." order by c.id";
       $where .= " limit ".$startrow.",".$pagelimit;
@@ -471,7 +472,7 @@ class DBClass
     {
       $this->DBOpen();
 
-      $val = "id as comment_id, board_id, contents as comment, created_at as up_date, name as handlename, pass_word, title";
+      $val = "id as comment_id, board_id, contents as comment, created_at as up_date, name as handlename, pass_word, title, img";
       $tbl = "comment";
       $where = "where id = ".$comment_id;
       $this->sql = $this->GetSelectSql($val, $tbl, $where);
@@ -495,7 +496,7 @@ class DBClass
     {
       $this->DBOpen();
 
-      $val = "SQL_CALC_FOUND_ROWS id as comment_id, board_id, contents as comment, created_at as up_date, name as handlename, pass_word, title";
+      $val = "SQL_CALC_FOUND_ROWS id as comment_id, board_id, contents as comment, created_at as up_date, name as handlename, pass_word, title, img";
       $tbl = "comment";
 
       $cnt = count($word);
