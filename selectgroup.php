@@ -8,6 +8,7 @@
   
   $view = new ViewClass();
   $dc = new DataCheckClass();
+  $db = new DBClass();
 
   //セッション
   $dc->SessionStart();
@@ -41,8 +42,6 @@
   /*****************************/
   //  確認ボタンクリック
   /*****************************/
-  $db = new DBClass();
-
   if(isset($_POST['btn_keycheck']))
   {
     $pass_word_ = $_POST['pass_word'];
@@ -78,7 +77,6 @@
   /*****************************/
   $page_ = isset($_GET['page']) ? $_GET['page'] : 1;
   $dc->GetPageInitialeVlaue($startrow, $allpage_, $allcount);//表示開始レコード//全ページ//全件数
-  //print sprintf("startrow=%s, allpage_=%s, allcount=%s <br>", $startrow, $allpage_, $allcount);
 
   $pagelimit = $dc->GetPageLimit();
   $startrow = $dc->GetStartRow($page_, $pagelimit);
@@ -109,7 +107,7 @@
   /*****************************/
   if(isset($_POST['btn_keycheck']) || (isset($_GET['type']) && 1==$_GET['type']))
   {//更新
-    $dt = $db->GetComment($updelkey_);
+    $dt = $db->GetComment($updelkey_, '');
     foreach($dt as $dr)
     {
       $view->comment_id = $dr['comment_id'];
@@ -118,6 +116,8 @@
       $view->title = $dr['title'];
       $view->handlename = $dr['handlename'];
       $view->pass_word = $dr['pass_word'];
+//      $view->imagefile = $dc->GetReleaseImageFile($dr['img']);
+      $view->imagefile = $dr['img'];
     }
     $view->urlfile = sprintf($view->urlarray['edit'], $board_id_, $comment_id_);
     $contents .= $view->htmlCommentInput();

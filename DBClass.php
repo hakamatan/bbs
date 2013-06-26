@@ -38,7 +38,7 @@ class DBClass
   /******************************/
   //  定数
   /******************************/
-  public $pagelimit = 5;
+  public $pagelimit = 15;
   public $bk_color = '#BDB76B';
   public $viewbk_color = '#FFDEAD';
 
@@ -277,7 +277,6 @@ class DBClass
       $item = "admin_id, admin_pass_word";
       $val = ":admin_id, :admin_pass_word";
       $this->sql = $this->GetInsertSql("user", $item, $val);
-      //print printf("(AddAdminInfo) admin_id' => %s, 'admin_pass_word' => %s <br>",$this->admin_id, $this->admin_pass_word);
       $this->sql_param = array('admin_id' => $this->admin_id, 'admin_pass_word' => sha1($this->admin_pass_word));
       $this->InsertData();
 
@@ -407,12 +406,8 @@ class DBClass
       $where = "order by c.created_at desc, b.id desc";
       $where .= " limit ".$startrow.",".$pagelimit;
       $this->sql = $this->GetSelectSql($val, $tbl, $where);
-//      print '(GetTitleView)'.$this->sql.';<br>';
       $ret = $this->SelectData();
 
-//      $this->sql = "select FOUND_ROWS() as count";
-////      print '(GetTitleViewNumber)'.$this->sql.';<br>';
-//      $retall = $this->SelectData();
       $retall = $this->GetAllDataCount();
 
       $this->DbClose();
@@ -466,7 +461,7 @@ class DBClass
   /******************************/
   //  編集コメント抽出
   /******************************/
-  function GetComment($comment_id)
+  function GetComment($comment_id, $board_id)
   {
     try
     {
@@ -474,7 +469,7 @@ class DBClass
 
       $val = "id as comment_id, board_id, contents as comment, created_at as up_date, name as handlename, pass_word, title, img";
       $tbl = "comment";
-      $where = "where id = ".$comment_id;
+      $where = ($comment_id != "") ? "where id = ".$comment_id : "where board_id = ".$board_id;
       $this->sql = $this->GetSelectSql($val, $tbl, $where);
       $ret = $this->SelectData();
 
@@ -512,7 +507,6 @@ class DBClass
       $where .= " limit ".$startrow.",".$pagelimit;
 
       $this->sql = $this->GetSelectSql($val, $tbl, $where);
-      //print '(GetCommentView=>)'.$this->sql.';<br>';
       $ret = $this->SelectData();
 
       $retall = $this->GetAllDataCount();

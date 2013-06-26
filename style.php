@@ -270,11 +270,9 @@ body {
 
 .comment {
   float:left;
-  background-color:#fgfgfg;
+  /*width:350px;*/
 }
 
 .imagefile {
   float:right;
-  background-color:#9999dc;
 }
-

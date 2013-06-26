@@ -118,7 +118,7 @@ class DataCheckClass
   function UpDelKeyCheck($pass_word, $comment_id)
   {
     $db = new DBClass();
-    $dt = $db->GetComment($comment_id);
+    $dt = $db->GetComment($comment_id, '');
     $dr_pass_word = null;
     foreach ($dt as $dr)
     {
@@ -232,7 +232,6 @@ class DataCheckClass
   /*****************************/
   function CheckLogin()
   {
-//    print sprintf("(c)admin_id=%s, (s)admin_id=%s, admin_pass_word=%s <br>", $_COOKIE['admin_id'], $_SESSION['admin_id'], $_SESSION['admin_pass_word']);
     if(isset($_COOKIE['admin_id']) || (isset($_SESSION['admin_id']) && isset($_SESSION['admin_pass_word'])))
     {
       if(!isset($_SESSION['admin_id']) || !isset($_SESSION['admin_pass_word']))
@@ -307,7 +306,6 @@ class DataCheckClass
   /*****************************/
   function GetColor(&$item)
   {
-    //print '(GetColor)<br>';
     if($this->CheckLogin())
     {
       $session = $this->GetSession();
@@ -514,16 +512,43 @@ class DataCheckClass
   /******************************/
   function GetFileName($tmpfile)
   {
-    return str_replace(ViewClass::$patharray['tmp'], '', $tmpfile);
+    if(!strpos($tmpfile, ViewClass::$patharray['image']))
+    {
+      return str_replace(ViewClass::$patharray['tmp'], '', $tmpfile);
+    }
+    else
+    {
+      return str_replace(ViewClass::$patharray['image'], '', $tmpfile);
+    }
+  }
+  
+  /******************************/
+  //  本登録画像パス取得
+  /******************************/
+  function GetReleaseImageFile($img)
+  {
+    return 0 < strlen($img) ? ViewClass::$patharray['image'].$img : "";
   }
   
   /******************************/
   //  イメージファイル移動
   /******************************/
-  function RenameImageFile($name)
+  function ReleaseImageFile($name)
   {
+    if(1 > strlen($name))
+    {//添付なし
+      return;
+    }
+
     $oldpath = ViewClass::$patharray['tmp'];
     $newpath = ViewClass::$patharray['image'];
+
+    if(!file_exists("$oldpath$name"))
+    {//以前の添付を使用なにもしない
+      return;
+    }
+    
+    //新規添付ファイル追加
     rename ("$oldpath$name", "$newpath$name");
   }
     
@@ -538,9 +563,111 @@ class DataCheckClass
   /******************************/
   //  添付画像ファイル削除
   /******************************/
-  function DeleteTmpImg($img)
+  function DeleteTmpImage($img)
   {
      unlink($img);
+  }
+    
+  /******************************/
+  //  本登録画像ファイルチェック
+  /******************************/
+  function CheckReleaseImage($img)
+  {
+    return false === strpos($img, ViewClass::$patharray['image']) ? false : true;
+  }
+
+  /******************************/
+  //  本登録画像ファイル削除
+  /******************************/
+  function DeleteOldReleaseImage($comment_id, $img)
+  {
+    $db = new DBClass();
+    $dt = $db->GetComment($comment_id, '');
+    $old_imagefile = '';
+    foreach($dt as $dr)
+    {
+      if($img != $dr['img'])
+      {//今回の添付と以前の添付が違ったら
+        $old_imagefile = $dr['img'];
+      }
+    }
+    
+    if(0 < strlen($old_imagefile))
+    {
+      $path = ViewClass::$patharray['image'];
+      $old_imagefile = "$path$old_imagefile";
+      $this->DeleteTmpImage($old_imagefile);
+    }
+  }
+
+  /******************************/
+  //  添付ファイル削除
+  /******************************/
+  function DeleteOldImage($delcheck, $old_imagefile, $imagefile)
+  {
+    //以前添付なし
+    if(1 > strlen($old_imagefile))
+    {
+      return;
+    }
+    
+    //今回添付なし
+    if(1 > strlen($imagefile))
+    {
+      if("0" != $delcheck)
+      {//削除チェックあり
+        if(!$this->CheckReleaseImage($old_imagefile))
+        {//一時添付なので削除する
+          $this->DeleteTmpImage($old_imagefile);
+        }
+      }
+      return;
+    }
+
+    //今回添付あり・以前添付は無条件に削除対象となる
+    if(!$this->CheckReleaseImage($old_imagefile))
+    {//一時添付なので削除する
+      $this->DeleteTmpImage($old_imagefile);
+    }
+    return;
+  }
+
+  /******************************/
+  //  本登録添付ファイル取得
+  /******************************/
+  function GetReleaseImage($comment_id, $board_id)
+  {
+    $db = new DBClass();
+    $dt = $db->GetComment($comment_id, $board_id);
+    $img[] = '';
+    $cnt = 0;
+    print '(GetReleaseImage)count(img)='.count($img).';<br>';
+    foreach($dt as $dr)
+    {
+      if(0 < strlen($dr['img']))
+      { 
+        $img[$cnt] = $dr['img'];
+        $cnt++;
+        print '(GetReleaseImage)='.$dr['img'].';<br>';
+      } 
+    }
+    print '(GetReleaseImage)count(img)='.count($img).';<br>';
+    return $img;
+  }
+
+  /******************************/
+  //  本登録添付ファイル取得
+  /******************************/
+  function DeleteReleaseImage($img)
+  {
+      print 'count(img)='.count($img).';<br>';
+    $path = ViewClass::$patharray['image'];
+    for ($i = 0; $i < count($img); $i++)
+    {
+      $imagefile = $img[$i];
+      print 'imagefile='.$imagefile.';<br>';
+      $this->DeleteTmpImage("$path$imagefile");
+    }
   }
 
 }//class end
