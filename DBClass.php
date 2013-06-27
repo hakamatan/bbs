@@ -433,7 +433,6 @@ class DBClass
       $tbl = "comment as c join board as b on c.board_id = b.id";
       $where = "where c.board_id = ".$board_id." order by c.id";
       $this->sql = $this->GetSelectSql($val, $tbl, $where);
-      //print 'GetGroupView=>first=>'.$this->sql.';<br>';
       $retfirst = $this->SelectData();
       
       //子データ抽出
@@ -442,7 +441,6 @@ class DBClass
       $where = "where c.board_id = ".$board_id." order by c.id";
       $where .= " limit ".$startrow.",".$pagelimit;
       $this->sql = $this->GetSelectSql($val, $tbl, $where);
-      //print 'GetGroupView=>'.$this->sql.';<br>';
       $ret = $this->SelectData();
 
       //件数

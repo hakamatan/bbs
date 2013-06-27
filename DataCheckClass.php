@@ -512,7 +512,7 @@ class DataCheckClass
   /******************************/
   function GetFileName($tmpfile)
   {
-    if(!strpos($tmpfile, ViewClass::$patharray['image']))
+    if(!$this->CheckReleaseImage($tmpfile))
     {
       return str_replace(ViewClass::$patharray['tmp'], '', $tmpfile);
     }
@@ -641,32 +641,30 @@ class DataCheckClass
     $dt = $db->GetComment($comment_id, $board_id);
     $img[] = '';
     $cnt = 0;
-    print '(GetReleaseImage)count(img)='.count($img).';<br>';
     foreach($dt as $dr)
     {
       if(0 < strlen($dr['img']))
       { 
         $img[$cnt] = $dr['img'];
         $cnt++;
-        print '(GetReleaseImage)='.$dr['img'].';<br>';
       } 
     }
-    print '(GetReleaseImage)count(img)='.count($img).';<br>';
     return $img;
   }
 
   /******************************/
-  //  本登録添付ファイル取得
+  //  本登録添付ファイル削除
   /******************************/
   function DeleteReleaseImage($img)
   {
-      print 'count(img)='.count($img).';<br>';
     $path = ViewClass::$patharray['image'];
     for ($i = 0; $i < count($img); $i++)
     {
       $imagefile = $img[$i];
-      print 'imagefile='.$imagefile.';<br>';
-      $this->DeleteTmpImage("$path$imagefile");
+      if(0 < strlen($imagefile))
+      {
+        $this->DeleteTmpImage("$path$imagefile");
+      }
     }
   }
 

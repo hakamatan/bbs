@@ -116,8 +116,7 @@
       $view->title = $dr['title'];
       $view->handlename = $dr['handlename'];
       $view->pass_word = $dr['pass_word'];
-//      $view->imagefile = $dc->GetReleaseImageFile($dr['img']);
-      $view->imagefile = $dr['img'];
+      $view->imagefile = $dc->GetReleaseImageFile($dr['img']);
     }
     $view->urlfile = sprintf($view->urlarray['edit'], $board_id_, $comment_id_);
     $contents .= $view->htmlCommentInput();

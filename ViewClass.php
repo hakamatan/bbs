@@ -237,7 +237,7 @@ class ViewClass
   {
     if(0 < strlen($this->imagefile))
     {
-      $imagefile = '<input type="hidden" name="old_imagefile" value="'.$this->imagefile.'"><img src="'.self::$patharray['image'].$this->imagefile.'" alt="" align="left">&nbsp;<input type="checkbox" name="delcheck" value="1">添付ファイル削除';
+      $imagefile = '<input type="hidden" name="old_imagefile" value="'.$this->imagefile.'"><img src="'.$this->imagefile.'" alt="" align="left">&nbsp;<input type="checkbox" name="delcheck" value="1">添付ファイル削除';
     }
     else
     {
@@ -359,7 +359,6 @@ class ViewClass
   /***************************/
   function htmlCommentCheck()
   {
-//                              <input type="button" value="  戻る   " onclick="history.back();"></td></tr>
     $ret = 
     '<!--(4:コメント確認 START)-->
         <div class="group0">
@@ -372,7 +371,7 @@ class ViewClass
             <table id="newdatacheck">
             <tr><th>名前</th><td>'.$this->handlename.'</td></tr>
             <tr><th>タイトル</th><td>'.$this->title.'</td></tr>
-            <tr><th>メッセージ</th><td><img src="'.$this->imagefile.'" alt="" align="right" width="'.$this->width.'" height="'.$this->height.'" >'.nl2br($this->comment).'</td></tr>
+            <tr><th>メッセージ</th><td><img src="'.$this->imagefile.'" alt="" align="right" width="'.$this->width.'px" height="'.$this->height.'px" >'.nl2br($this->comment).'</td></tr>
             <tr><th>更新・削除キー</th><td>'.$this->pass_word.'</td></tr>
             <tr><th></th><td class="right"><input type="submit" name="btn_insert" value="  書込み  ">
                               <input type="submit" name="btn_edit" value="  編集   "></td></tr>
@@ -494,7 +493,8 @@ class ViewClass
     else
     {
       $imagefile = '';
-      $comment = '';
+      $width = 580;
+      $comment = 'style="width:'.$width.'px;"';
     }
     $ret = '
       <div class="title_name">'.$this->title.'  ---  '.$this->handlename.'</div>

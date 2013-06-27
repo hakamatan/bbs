@@ -94,19 +94,26 @@
         return;
       }
       //以前添付したファイルを使用
-      print sprintf("delcheck_=%s, old_imagefile_=%s, strlen(imagefile_)=%s  <br>", $delcheck_, $old_imagefile_, strlen($imagefile_));
       if("0" == $delcheck_ && $old_imagefile_ && (1 > strlen($imagefile_)))
       {//添付削除チェックなし・以前添付あり・今回添付なし
         $view->imagefile = $old_imagefile_;
+        $dc->Zoomout($view->imagefile, $view->width, $view->height);
+      }
+      else
+      {
+        if(0 < strlen($view->imagefile))
+        {//イメージファイル横縦幅セット
+          $dc->Zoomout($view->imagefile, $view->width, $view->height);
+        }
+        else
+        {
+          print 'イメージなし<br>';
+        }
       }
       //添付削除
       $dc->DeleteOldImage($delcheck_, $old_imagefile_, $imagefile_);
 
       //データチェックOK
-      if(0 < strlen($view->imagefile))
-      {
-        $dc->Zoomout($view->imagefile, $view->width, $view->height); //イメージファイル横縦幅セット
-      }
       $view->pagetitle = $view->pagetitlearray['inputcheck'];
       $view->handlename = $handlename_;
       $view->title = $title_;
@@ -175,7 +182,6 @@
           $db->handlename = $handlename_;
           $db->pass_word  = $pass_word_;
           $db->imagefile = $dc->GetFileName($imagefile_);
-          print sprintf("返信追加 imagefile=%s", $db->imagefile);
           
           $db->AddCommentReturn();
           $dc->ReleaseImageFile($db->imagefile);
